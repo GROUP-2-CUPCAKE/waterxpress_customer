@@ -40,6 +40,8 @@ dependencies:
   firebase_auth: ^5.3.3
   cloud_firestore: ^5.5.0
   flutter_screenutil: ^5.9.3
+  curved_labeled_navigation_bar: ^2.0.5
+  smooth_page_indicator: ^1.2.0+3
 
 dev_dependencies:
   flutter_test:
