@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:waterxpress_customer/firebase_options.dart';
 import 'app/modules/login/controllers/login_controller.dart';
 import 'app/routes/app_pages.dart';
+import 'package:get_storage/get_storage.dart';
 import 'app/utils/loading.dart';
 
 void main() async {
@@ -13,6 +14,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await GetStorage.init();
   runApp(MyApp());
 }
 
@@ -20,30 +22,65 @@ class MyApp extends StatelessWidget {
   final authC = Get.put(LoginController(), permanent: true);
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-      designSize: const Size(375, 690),
-      minTextAdapt: true,
-      splitScreenMode: true,
-      builder: (context, child) {
-        return StreamBuilder<User?>(
-          stream: authC.streamAuthStatus,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.active) {
-              print(snapshot);
-              return GetMaterialApp(
-                debugShowCheckedModeBanner: false,
-                title: "APK WaterXpress",
-                initialRoute: AppPages.INITIAL,
-                getPages: AppPages.routes,
-                theme: ThemeData(
-                  primarySwatch: Colors.indigo,
-                ),
-              );
-            }
-            return LoadingView();
-          },
-        );
-      },
-    );
+    return StreamBuilder<User?>(
+        stream: authC.streamAuthStatus,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.active) {
+            return ScreenUtilInit(
+              designSize: const Size(375, 812), // Ukuran desain (misalnya i
+              minTextAdapt: true,
+              splitScreenMode: true,
+              builder: (context, child) {
+                return GetMaterialApp(
+                  debugShowCheckedModeBanner: false,
+                  title: "WaterXpress",
+                  initialRoute: AppPages.INITIAL,
+                  getPages: AppPages.routes,
+                  theme: ThemeData(
+                    primarySwatch: Colors.indigo,
+                  ),
+                  builder: (context, widget) {
+                    // Untuk memastikan ScreenUtil bekerja dengan benar
+                    ScreenUtil.init(context);
+                    return widget!;
+                  },
+                );
+              },
+            );
+          }
+          return LoadingView();
+        });
   }
 }
+
+// class MyApp extends StatelessWidget {
+  // final authC = Get.put(LoginController(), permanent: true);
+  // @override
+  // Widget build(BuildContext context) {
+    // return ScreenUtilInit(
+      // designSize: const Size(375, 690),
+      // minTextAdapt: true,
+      // splitScreenMode: true,
+      // builder: (context, child) {
+        // return StreamBuilder<User?>(
+          // stream: authC.streamAuthStatus,
+          // builder: (context, snapshot) {
+            // if (snapshot.connectionState == ConnectionState.active) {
+              // print(snapshot);
+              // return GetMaterialApp(
+                // debugShowCheckedModeBanner: false,
+                // title: "APK WaterXpress",
+                // initialRoute: AppPages.INITIAL,
+                // getPages: AppPages.routes,
+                // theme: ThemeData(
+                  // primarySwatch: Colors.indigo,
+                // ),
+              // );
+            // }
+            // return LoadingView();
+          // },
+        // );
+      // },
+    // );
+  // }
+// }
