@@ -29,7 +29,7 @@ class RegisterView extends GetView<RegisterController> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    height: 360,
+                    height: 400,
                     padding: const EdgeInsets.only(top: 50),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -310,6 +310,7 @@ class RegisterView extends GetView<RegisterController> {
                                   controller.emailController.text,
                                   controller.passwordController.text,
                                   controller.confirmPasswordController.text,
+                                  // controller.alamatController.text,
                                 ),
                               ),
                             )),
