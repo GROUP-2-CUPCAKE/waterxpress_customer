@@ -4,8 +4,8 @@ import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-// import '../../detail_pesanan/views/detail_pesanan_view.dart';
 import '../../detail_pesanan/views/detail_pesanan_view.dart';
+import '../../pesanan/views/pesanan_view.dart';
 import '../../profil/views/profil_view.dart';
 import '../controllers/home_controller.dart';
 
@@ -21,8 +21,9 @@ class _HomeViewState extends State<HomeView> {
 
   final List<Widget> _pages = [
     const HomeContent(),
-    const Center(child: Text('Pesanan')),
+    const PesananView(),
     const Center(child: Text('Riwayat')),
+    // ProfileView(),
     ProfilView(),
     // const Center(child: Text('Profil')),
   ];
@@ -68,7 +69,7 @@ class _HomeViewState extends State<HomeView> {
                               color: Colors.white,
                             ),
                           ),
-                          Spacer(),
+                          const Spacer(),
                           PopupMenuButton<String>(
                             icon: const Icon(Icons.more_vert,
                                 color: Colors.white),
@@ -111,17 +112,17 @@ class _HomeViewState extends State<HomeView> {
                   ),
                 ),
               Expanded(
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(40),
-                    topRight: Radius.circular(40),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Color.fromARGB(255, 252, 252, 252),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(40),
+                      topRight: Radius.circular(40),
+                    ),
                   ),
-                  child: Container(
-                    color: const Color.fromARGB(255, 252, 252, 252),
-                    child: _pages[_currentIndex],
-                  ),
+                  child: _pages[_currentIndex],
                 ),
-              ),
+              )
             ],
           ),
         ),
@@ -399,7 +400,8 @@ class HomeContent extends StatelessWidget {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              DetailPesananView(),
+                                              DetailPesananView(
+                                                  productId: produk.id),
                                         ),
                                       );
                                     },

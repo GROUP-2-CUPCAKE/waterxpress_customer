@@ -172,7 +172,7 @@ class ProfilView extends StatelessWidget {
                             ),
                             SizedBox(height: 5),
                             Text(
-                              'Rp ${controller.shippingCost.value}',
+                              'Rp ${controller.ongkir.value}',
                               style: TextStyle(
                                   fontSize: 16, color: Colors.black87),
                             ),
