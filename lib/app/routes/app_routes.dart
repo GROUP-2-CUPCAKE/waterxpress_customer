@@ -10,6 +10,9 @@ abstract class Routes {
   static const RESET_PASSWORD = _Paths.RESET_PASSWORD;
   static const DETAIL_PESANAN = _Paths.DETAIL_PESANAN;
   static const PROFIL = _Paths.PROFIL;
+  static const PROFILE = _Paths.PROFILE;
+  static const PESANAN = _Paths.PESANAN;
+  static const RINCIAN_PESANAN = _Paths.RINCIAN_PESANAN;
 }
 
 abstract class _Paths {
@@ -21,4 +24,7 @@ abstract class _Paths {
   static const RESET_PASSWORD = '/reset-password';
   static const DETAIL_PESANAN = '/detail-pesanan';
   static const PROFIL = '/profil';
+  static const PROFILE = '/profile';
+  static const PESANAN = '/pesanan';
+  static const RINCIAN_PESANAN = '/rincian-pesanan';
 }

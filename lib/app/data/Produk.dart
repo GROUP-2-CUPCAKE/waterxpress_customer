@@ -4,6 +4,7 @@ class Produk {
   final int harga;
   final int stok;
   final String images;
+  // int jumlah; // Jumlah item (default: 1)
 
   Produk({
     this.id = "",
@@ -11,6 +12,7 @@ class Produk {
     required this.harga,
     required this.stok,
     required this.images,
+    // this.jumlah = 1,
   });
 
   factory Produk.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class Produk {
       harga: json['harga'] as int,
       stok: json['stok'] as int,
       images: json['images'] as String,
+      // jumlah: json['jumlah'] ?? 1,
     );
   }
 
@@ -30,6 +33,7 @@ class Produk {
       'harga': harga,
       'stok': stok,
       'images': images,
+      // 'jumlah': jumlah,
     };
   }
 }

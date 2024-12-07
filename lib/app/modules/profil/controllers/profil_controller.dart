@@ -19,7 +19,7 @@ class ProfilController extends GetxController {
   var nama = ''.obs;
   var nohp = ''.obs;
   var alamat = ''.obs;
-  var shippingCost = 0.0.obs;
+  var ongkir = 0.0.obs;
   var distance = 0.0.obs;
   var inputAddress = ''.obs;
   var latitude = 0.0.obs;
@@ -54,7 +54,7 @@ class ProfilController extends GetxController {
           nama.value = snapshot['nama'] ?? '';
           nohp.value = snapshot['nohp'] ?? '';
           alamat.value = snapshot['alamat'] ?? '';
-          shippingCost.value = snapshot['shippingCost'] ?? 0.0;
+          ongkir.value = snapshot['ongkir'] ?? 0.0;
           // Anda bisa mengupdate jarak dan ongkir sesuai kebutuhan
         }
       }
@@ -86,7 +86,7 @@ class ProfilController extends GetxController {
         nama.value = userData['username'] ?? 'N/A';
         nohp.value = userData['nohp'] ?? 'N/A';
         alamat.value = userData['alamat'] ?? '';
-        shippingCost.value = userData['ongkir'] ?? 0;
+        ongkir.value = userData['ongkir'] ?? 0;
       } else {
         throw Exception('User data not found');
       }
@@ -180,11 +180,11 @@ class ProfilController extends GetxController {
 
       // Hitung biaya ongkir
       if (dist <= 2) {
-        shippingCost.value = 1000;
+        ongkir.value = 1000;
       } else if (dist <= 3) {
-        shippingCost.value = 2000;
+        ongkir.value = 2000;
       } else {
-        shippingCost.value = ((dist - 3).ceil() * 1000) + 2000;
+        ongkir.value = ((dist - 3).ceil() * 1000) + 2000;
       }
     }
   }
@@ -211,7 +211,7 @@ class ProfilController extends GetxController {
         throw Exception('User not logged in');
       }
 
-      if (alamat.value.isEmpty || shippingCost.value == 0) {
+      if (alamat.value.isEmpty || ongkir.value == 0) {
         Get.snackbar('Error', 'Alamat atau ongkir tidak valid.');
         return;
       }
@@ -226,7 +226,7 @@ class ProfilController extends GetxController {
         // Update alamat dan ongkir berdasarkan email
         await customerDoc.docs.first.reference.update({
           'alamat': alamat.value,
-          'ongkir': shippingCost.value,
+          'ongkir': ongkir.value,
         });
 
         Get.snackbar('Sukses', 'Alamat dan ongkir berhasil disimpan.');
