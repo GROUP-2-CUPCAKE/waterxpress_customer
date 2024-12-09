@@ -8,6 +8,7 @@ import '../../detail_pesanan/views/detail_pesanan_view.dart';
 import '../../pesanan/views/pesanan_view.dart';
 import '../../profil/views/profil_view.dart';
 import '../controllers/home_controller.dart';
+import '../../riwayat_pesanan/views/riwayat_pesanan_view.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -22,10 +23,8 @@ class _HomeViewState extends State<HomeView> {
   final List<Widget> _pages = [
     const HomeContent(),
     PesananView(),
-    const Center(child: Text('Riwayat')),
-    // ProfileView(),
+    RiwayatPesananView(),
     ProfilView(),
-    // const Center(child: Text('Profil')),
   ];
 
   @override

@@ -9,12 +9,13 @@ class RincianPesananController extends GetxController {
   // Observable untuk detail pesanan
   Rx<Pesanan?> pesanan = Rx<Pesanan?>(null);
   RxBool isLoading = false.obs;
+  RxString errorMessage = RxString('');
 
   // Observable untuk detail pembayaran
   RxString alamat = RxString('');
-  RxInt ongkir = RxInt(0);
-  RxInt subtotalProduk = RxInt(0);
-  RxInt total = RxInt(0);
+  RxDouble ongkir = RxDouble(0.0);
+  RxDouble subtotalProduk = RxDouble(0.0);
+  RxDouble total = RxDouble(0.0);
 
   // Observable untuk daftar produk
   RxList<dynamic> produkList = RxList<dynamic>([]);
@@ -22,86 +23,75 @@ class RincianPesananController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    final pesananId = Get.arguments?['pesananId'];
-    if (pesananId != null) {
-      fetchPesananDetail(pesananId);
-    } else {
-      Get.snackbar(
-        'Error',
-        'ID Pesanan tidak ditemukan',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
+    
+    // Gunakan WidgetsBinding untuk menunda eksekusi
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final pesananId = Get.arguments?['id'] as String?;
+      if (pesananId != null && pesananId.isNotEmpty) {
+        fetchPesananDetail(pesananId);
+      }
+    });
   }
 
-  Future<void> fetchPesananDetail(String id) async {
+  Future<void> fetchPesananDetail(String pesananId) async {
     try {
+      // Reset state sebelum memuat
+      _resetState();
+      
       isLoading.value = true;
+      errorMessage.value = '';
 
-      // DocumentSnapshot doc = await _firestore.collection('Pesanan').doc(id).get();
-      // Reset semua value
-      // pesanan.value = null;
-      // alamat.value = '';
-      // ongkir.value = 0;
-      // subtotalProduk.value = 0;
-      // total.value = 0;
-      // produkList.clear();
-
-      // Query untuk mendapatkan pesanan berdasarkan userId
-      QuerySnapshot querySnapshot = await _firestore
+      // Ambil dokumen pesanan
+      final doc = await _firestore
           .collection('Pesanan')
-          .where('userId', isEqualTo: id)
+          .doc(pesananId)
           .get();
 
-      if (querySnapshot.docs.isNotEmpty) {
-        var doc = querySnapshot.docs.first;
-        Pesanan fetchedPesanan = Pesanan.fromJson(
-            {'userId': doc.id, ...doc.data() as Map<String, dynamic>});
+      if (doc.exists) {
+        // Convert data ke model Pesanan
+        final fetchedPesanan = Pesanan.fromJson({
+          'id': doc.id,
+          ...doc.data() as Map<String, dynamic>
+        });
 
-        // Set nilai pesanan
-        pesanan.value = fetchedPesanan;
-
-        // Set detail alamat dan pembayaran
-        alamat.value = fetchedPesanan.alamat ?? 'Alamat tidak tersedia';
-        ongkir.value = fetchedPesanan.ongkir ?? 0;
-
-        // Hitung subtotal produk
-        subtotalProduk.value = fetchedPesanan.subtotalProduk ?? 0;
-
-        // Set total pembayaran
-        total.value = fetchedPesanan.total ?? 0;
-
-        // Set daftar produk
-        produkList.value = fetchedPesanan.produk ?? [];
+        // Update state
+        _updatePesananState(fetchedPesanan);
       } else {
-        // Jika tidak ada pesanan ditemukan
-        Get.snackbar(
-          'Error',
-          'Pesanan tidak ditemukan',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        _handleError('Pesanan tidak ditemukan');
       }
     } catch (e) {
-      print('Error fetching pesanan detail: $e');
-      Get.snackbar(
-        'Error',
-        'Gagal memuat detail pesanan',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      _handleError(e.toString());
     } finally {
       isLoading.value = false;
     }
   }
 
+  void _updatePesananState(Pesanan fetchedPesanan) {
+    pesanan.value = fetchedPesanan;
+    alamat.value = fetchedPesanan.alamat ?? 'Alamat tidak tersedia';
+    ongkir.value = (fetchedPesanan.ongkir ?? 0).toDouble();
+    subtotalProduk.value = _calculateSubtotal(fetchedPesanan.produk);
+    total.value = (fetchedPesanan.total ?? 0).toDouble();
+    produkList.value = fetchedPesanan.produk ?? [];
+  }
+
+  // Metode untuk menghitung subtotal produk
+  double _calculateSubtotal(List<dynamic>? produkList) {
+    if (produkList == null || produkList.isEmpty) return 0.0;
+
+    return produkList.fold(0.0, (total, produk) {
+      double harga = (produk['harga'] ?? 0.0).toDouble();
+      int jumlah = (produk['jumlah'] ?? 1);
+      return total + (harga * jumlah);
+    });
+  }
+
   // Metode untuk membatalkan pesanan
   Future<void> batalkanPesanan() async {
-    if (pesanan.value == null) return;
+    if (pesanan.value == null) {
+      _handleError('Tidak ada pesanan yang dapat dibatalkan');
+      return;
+    }
 
     try {
       await _firestore.collection('Pesanan').doc(pesanan.value!.id).update({
@@ -109,12 +99,49 @@ class RincianPesananController extends GetxController {
         'tanggalPembatalan': FieldValue.serverTimestamp()
       });
 
-      Get.snackbar('Berhasil', 'Pesanan berhasil dibatalkan');
+      // Update status lokal
+      pesanan.value?.status = 'Dibatalkan';
+
+      _showSuccessSnackbar('Pesanan berhasil dibatalkan');
+      
       // Kembali ke halaman sebelumnya
       Get.back();
     } catch (e) {
-      print('Error membatalkan pesanan: $e');
-      Get.snackbar('Gagal', 'Gagal membatalkan pesanan');
+      _handleError('Gagal membatalkan pesanan: ${e.toString()}');
     }
+  }
+
+  // Reset semua nilai
+  void _resetState() {
+    pesanan.value = null;
+    alamat.value = '';
+    ongkir.value = 0.0;
+    subtotalProduk.value = 0.0;
+    total.value = 0.0;
+    produkList.clear();
+    errorMessage.value = '';
+  }
+
+  // Metode bantuan untuk menampilkan error
+  void _handleError(String message) {
+    errorMessage.value = message;
+    Get.snackbar(
+      'Error',
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+  }
+
+  // Metode bantuan untuk menampilkan pesan sukses
+  void _showSuccessSnackbar(String message) {
+    Get.snackbar(
+      'Berhasil',
+      message,
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+    );
   }
 }

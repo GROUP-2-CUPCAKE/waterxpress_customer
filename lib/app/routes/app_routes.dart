@@ -14,6 +14,10 @@ abstract class Routes {
   static const PESANAN = _Paths.PESANAN;
   static const RINCIAN_PESANAN = _Paths.RINCIAN_PESANAN;
   static const LACAK_PESANAN = _Paths.LACAK_PESANAN;
+  static const RIWAYAT_PESANAN = _Paths.RIWAYAT_PESANAN;
+  static const RIWAYATPESANAN = _Paths.RIWAYATPESANAN;
+  static const LACAK = _Paths.LACAK;
+  static const LK = _Paths.LK;
 }
 
 abstract class _Paths {
@@ -29,4 +33,8 @@ abstract class _Paths {
   static const PESANAN = '/pesanan';
   static const RINCIAN_PESANAN = '/rincian-pesanan';
   static const LACAK_PESANAN = '/lacak-pesanan';
+  static const RIWAYAT_PESANAN = '/riwayat-pesanan';
+  static const RIWAYATPESANAN = '/riwayatpesanan';
+  static const LACAK = '/lacak';
+  static const LK = '/lk';
 }

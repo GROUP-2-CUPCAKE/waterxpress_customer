@@ -10,6 +10,7 @@ class Pesanan {
   Timestamp? tanggalPesanan;
   int? total;
   String? userId;
+  String? status;
 
   Pesanan({
     this.id,
@@ -21,12 +22,13 @@ class Pesanan {
     this.tanggalPesanan,
     this.total,
     this.userId,
+    this.status,
   });
 
   // Konstruktor dari JSON
-  factory Pesanan.fromJson(Map<String, dynamic> json) {
+  factory Pesanan.fromJson(Map<String, dynamic> json, {String? documentId}) {
     return Pesanan(
-      id: json['id'],
+      id: documentId ?? json['id'],
       alamat: json['alamat'],
       email: json['email'],
       ongkir: _parseIntSafely(json['ongkir']),
@@ -35,6 +37,7 @@ class Pesanan {
       tanggalPesanan: json['tanggalPesanan'],
       total: _parseIntSafely(json['total']),
       userId: json['userId'],
+      status: json['status'],
     );
   }
 
@@ -57,6 +60,7 @@ class Pesanan {
       'tanggalPesanan': tanggalPesanan,
       'total': total,
       'userId': userId,
+      'status': status,
     };
   }
 
