@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '/app/data/Pesanan.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class PesananController extends GetxController {
+class RiwayatPesananController extends GetxController {
   // Referensi ke koleksi Riwayat di Firestore
   final CollectionReference ref = FirebaseFirestore.instance.collection('Pesanan');
   final FirebaseAuth _auth = FirebaseAuth.instance;

@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '/app/data/Pesanan.dart';
-import '/app/modules/pesanan/controllers/pesanan_controller.dart';
+import 'package:waterxpress_customer/app/modules/riwayat_pesanan/controllers/riwayat_pesanan_controller.dart';
 import '/app/routes/app_pages.dart'; // Pastikan import routes
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+class RiwayatPesananView extends StatelessWidget {
+  RiwayatPesananView({Key? key}) : super(key: key);
 
-class PesananView extends StatelessWidget {
-  PesananView({Key? key}) : super(key: key);
-  
   // Inisialisasi controller
-  final PesananController controller = Get.put(PesananController());
+  final RiwayatPesananController controller = Get.put(RiwayatPesananController());
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +55,7 @@ class PesananView extends StatelessWidget {
             ),
             Expanded(
               child: StreamBuilder<List<Pesanan>>(
-                stream: controller.getCurrentUserPesanan(includeStatuses: ['Diproses', 'Dikemas', 'Dikirim']),
+                stream: controller.getCurrentUserPesanan(includeStatuses: ['Selesai']),
                 builder: (context, snapshot) {
                   // Tampilkan loading indicator saat data sedang dimuat
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -101,14 +100,6 @@ class PesananView extends StatelessWidget {
     );
   }
 
-   // Metode untuk mendapatkan ngal
-  String _formatTanggal(Timestamp? tanggalPesanan) {
-    if (tanggalPesanan == null) {
-      return '-'; // atau pesan default lainnya
-    }
-    return DateFormat('dd MMM yyyy HH:mm').format(tanggalPesanan.toDate());
-  }
-
   // Metode untuk mendapatkan nama produk dari index 0
   String _getProdukNames(List<dynamic>? produkList) {
     if (produkList == null || produkList.isEmpty) {
@@ -117,6 +108,14 @@ class PesananView extends StatelessWidget {
 
     // Ambil nama produk dari item pertama
     return produkList[0]['nama'] ?? 'Produk Tidak Diketahui';
+  }
+
+   // Metode untuk mendapatkan ngal
+  String _formatTanggal(Timestamp? tanggalPesanan) {
+    if (tanggalPesanan == null) {
+      return '-'; // atau pesan default lainnya
+    }
+    return DateFormat('dd MMM yyyy HH:mm').format(tanggalPesanan.toDate());
   }
 
   // Metode untuk mendapatkan gambar produk dari index 0
@@ -286,12 +285,8 @@ class PesananView extends StatelessWidget {
   // Metode untuk menentukan warna status
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'diproses':
-        return Colors.grey;
-      case 'dikemas':
-        return Colors.purple;
-      case 'dikirim':
-        return Colors.orange;
+      case 'selesai':
+        return Colors.green;
       default:
         return Colors.black;
     }

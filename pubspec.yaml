@@ -48,6 +48,7 @@ dependencies:
   geocoding: ^3.0.0
   url_launcher: ^6.3.1
   progress_tracker: ^0.0.12
+  intl: ^0.20.1
 
 dev_dependencies:
   flutter_test:

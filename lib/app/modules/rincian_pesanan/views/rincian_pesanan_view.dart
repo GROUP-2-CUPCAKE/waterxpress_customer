@@ -1,25 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../lacak_pesanan/views/lacak_pesanan_view.dart';
+import '/app/routes/app_pages.dart'; // Pastikan import routes
 import '../controllers/rincian_pesanan_controller.dart';
 
 class RincianPesananView extends StatelessWidget {
-  // final String pesananId;
+  RincianPesananView({Key? key}) : super(key: key);
 
-  // const RincianlPesananView({super.key, required this.pesananId});
-  // RincianPesananView({Key? key, required this.pesananId}) : super(key: key);
-  final RincianPesananController controller =
-      Get.put(RincianPesananController());
+  final RincianPesananController controller = Get.find();
 
   @override
   Widget build(BuildContext context) {
-    // final RincianPesananController controller = Get.find();
-    // Inisialisasi controller dengan pesananId
-    final RincianPesananController controller =
-        Get.put(RincianPesananController(), permanent: true);
+    // Ambil pesananId dari argumen
+    final String? pesananId = Get.arguments?['pesananId'];
 
-    // Panggil method fetch pesanan dengan pesananId yang diterima
-    // controller.fetchPesananDetail(pesananId);
+    // Panggil method untuk mengambil detail pesanan
+    if (pesananId != null) {
+      controller.fetchPesananDetail(pesananId);
+    }
 
     return Scaffold(
       appBar: PreferredSize(
@@ -57,7 +54,18 @@ class RincianPesananView extends StatelessWidget {
         final pesanan = controller.pesanan.value;
 
         if (pesanan == null) {
-          return const Center(child: Text('Pesanan tidak ditemukan.'));
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Pesanan tidak ditemukan.'),
+                ElevatedButton(
+                  onPressed: () => Get.back(),
+                  child: const Text('Kembali'),
+                )
+              ],
+            ),
+          );
         }
 
         return SingleChildScrollView(
@@ -109,7 +117,7 @@ class RincianPesananView extends StatelessWidget {
             Text(controller.alamat.value),
             const SizedBox(height: 5),
             Text(
-              'Biaya Ongkir: ${(controller.ongkir.value)}',
+              'Biaya Ongkir: Rp${controller.ongkir.value.toStringAsFixed(0)}',
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
@@ -157,15 +165,14 @@ class RincianPesananView extends StatelessWidget {
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Harga: ${(produk['harga'] ?? 0)}'),
-                        Text('kuantitas: ${produk['kuantitas'] ?? 1}'),
+                        Text('Harga: Rp${(produk['harga'] ?? 0).toStringAsFixed(0)}'),
+                        Text('Kuantitas: ${produk['jumlah'] ?? 1}'),
                       ],
                     ),
-                    trailing: Text(
-                      // ((produk['harga'] ?? 0) * (produk['kuantitas'] ?? 1)),
-                      'Rp${((produk['harga'] ?? 0) * (produk['jumlah'] ?? 1))}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    // trailing: Text(
+                    //   'Rp${((produk['harga'] ?? 0) * (produk['jumlah'] ?? 1)).toStringAsFixed(0)}',
+                    //   style: const TextStyle(fontWeight: FontWeight.bold),
+                    // ),
                   ),
                 ))
             .toList(),
@@ -228,12 +235,12 @@ class RincianPesananView extends StatelessWidget {
             const SizedBox(height: 10),
             _buildPaymentRow(
               'Subtotal Produk',
-              'Rp${controller.subtotalProduk.value}',
+              'Rp${controller.subtotalProduk.value.toStringAsFixed(0)}',
             ),
-            _buildPaymentRow(
-                'Biaya Pengiriman', 'Rp${(controller.ongkir.value)}'),
+                        _buildPaymentRow(
+                'Biaya Pengiriman', 'Rp${controller.ongkir.value.toStringAsFixed(0)}'),
             const Divider(),
-            _buildPaymentRow('Total', 'Rp${(controller.total.value)}',
+            _buildPaymentRow('Total', 'Rp${controller.total.value.toStringAsFixed(0)}',
                 isBold: true),
           ],
         ),
@@ -279,21 +286,30 @@ class RincianPesananView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             // Tombol Batalkan Pesanan
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red.shade400,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              onPressed: () {
-                // Tampilkan konfirmasi pembatalan
-                _showBatalkanPesananDialog(controller);
-              },
-              child: const Text(
-                'Batalkan Pesanan',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
+            Obx(() {
+              // Sembunyikan tombol batalkan jika pesanan sudah selesai atau dibatalkan
+              if (controller.pesanan.value?.status?.toLowerCase() == 'selesai' ||
+                  controller.pesanan.value?.status?.toLowerCase() == 'dikirim' ||
+                  controller.pesanan.value?.status?.toLowerCase() == 'dikemas') {
+                return const SizedBox.shrink();
+              }
+
+              return ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade400,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+                onPressed: () {
+                  // Tampilkan konfirmasi pembatalan
+                  _showBatalkanPesananDialog(controller);
+                },
+                child: const Text(
+                  'Batalkan Pesanan',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
+            }),
 
             // Tombol Lacak Pesanan
             ElevatedButton(
@@ -302,19 +318,18 @@ class RincianPesananView extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
-              // onPressed: controller.lacakPesanan,
               onPressed: () {
-                // Pastikan ID pesanan tersedia sebelum navigasi
-                if (controller.pesanan.value?.id != null) {
-                  Get.to(
-                    () => LacakPesananView(),
-                    arguments: {'pesananId': controller.pesanan.value!.id},
+                final pesananId = controller.pesanan.value?.id;
+                if (pesananId != null) {
+                  print('ID Pesanan: $pesananId');
+                  Get.toNamed(
+                    Routes.LACAK, 
+                    arguments: {'pesananId': pesananId}
                   );
                 } else {
-                  // Tampilkan pesan jika ID tidak tersedia
                   Get.snackbar(
                     'Error',
-                    'ID Pesanan tidak ditemukan',
+                    'ID Pesanan tidak tersedia',
                     snackPosition: SnackPosition.BOTTOM,
                     backgroundColor: Colors.red,
                     colorText: Colors.white,
@@ -363,4 +378,32 @@ class RincianPesananView extends StatelessWidget {
           false, // Tidak bisa ditutup dengan mengetuk di luar dialog
     );
   }
+}
+
+// Extension untuk membantu pemformatan
+extension FormatExtension on num {
+  String toRupiah() {
+    return 'Rp${toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (match) => '${match[1]}.')}';
+  }
+}
+
+// Tambahan styling dan utilitas
+class RincianPesananStyles {
+  static const TextStyle titleStyle = TextStyle(
+    fontWeight: FontWeight.bold,
+    fontSize: 16,
+  );
+
+  static const TextStyle subtitleStyle = TextStyle(
+    fontSize: 14,
+    color: Colors.grey,
+  );
+
+  static BoxDecoration gradientDecoration = BoxDecoration(
+    gradient: LinearGradient(
+      colors: [Color(0xFF0288D1), Color(0xFF81D4FA)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+  );
 }
