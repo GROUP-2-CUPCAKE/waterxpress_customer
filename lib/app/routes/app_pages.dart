@@ -10,6 +10,11 @@ import '../modules/register/bindings/register_binding.dart';
 import '../modules/register/views/register_view.dart';
 import '../modules/reset_password/bindings/reset_password_binding.dart';
 import '../modules/reset_password/views/reset_password_view.dart';
+// import '../modules/rincian_pesanan/bindings/rincian_pesanan_binding.dart';
+// import '../modules/rincian_pesanan/views/rincian_pesanan_view.dart';
+// import '../modules/rincian_pesanan/bindings/rincian_pesanan_binding.dart';
+import '../modules/rincian_pesanan/bindings/rincian_pesanan_binding.dart';
+import '../modules/rincian_pesanan/views/rincian_pesanan_view.dart';
 import '../modules/splashscreen/bindings/splashscreen_binding.dart';
 import '../modules/splashscreen/views/splashscreen_view.dart';
 
@@ -50,6 +55,13 @@ class AppPages {
       name: _Paths.PROFIL,
       page: () => ProfilView(),
       binding: ProfilBinding(),
+    ),
+    GetPage(
+      name: Routes.RINCIAN_PESANAN,
+      page: () => RincianPesananView(
+          // pesananId: 'id',
+          ),
+      binding: RincianPesananBinding(),
     ),
   ];
 }

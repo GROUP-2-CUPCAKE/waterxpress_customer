@@ -488,6 +488,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
+  progress_tracker:
+    dependency: "direct main"
+    description:
+      name: progress_tracker
+      sha256: "4384590f383e1632f4f2dae4803ae2d87704e8251ccfbc269b582e265b4cdb19"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.12"
   rxdart:
     dependency: transitive
     description:
