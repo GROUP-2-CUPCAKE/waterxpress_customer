@@ -11,7 +11,7 @@ class DetailPesananController extends GetxController {
   var alamat = ''.obs;
   var ongkir = 0.obs;
 
-  // Observable list for products
+  // Observable list for productsH
   var produkList = <Produk>[].obs;
   RxList<Produk> selectedProducts = <Produk>[].obs;
   RxList<Produk> allProducts = <Produk>[].obs;
@@ -292,7 +292,7 @@ class DetailPesananController extends GetxController {
         'total': total.value,
         'produk': semuaProduk,
         'tanggalPesanan': FieldValue.serverTimestamp(),
-        'status': 'Menunggu Konfirmasi', // Status default pesanan
+        'status': 'Diproses', // Status default pesanan
       };
 
       // Simpan pesanan ke Firestore

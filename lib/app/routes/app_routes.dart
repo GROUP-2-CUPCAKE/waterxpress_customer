@@ -13,6 +13,7 @@ abstract class Routes {
   static const PROFILE = _Paths.PROFILE;
   static const PESANAN = _Paths.PESANAN;
   static const RINCIAN_PESANAN = _Paths.RINCIAN_PESANAN;
+  static const LACAK_PESANAN = _Paths.LACAK_PESANAN;
 }
 
 abstract class _Paths {
@@ -27,4 +28,5 @@ abstract class _Paths {
   static const PROFILE = '/profile';
   static const PESANAN = '/pesanan';
   static const RINCIAN_PESANAN = '/rincian-pesanan';
+  static const LACAK_PESANAN = '/lacak-pesanan';
 }

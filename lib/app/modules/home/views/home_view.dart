@@ -21,7 +21,7 @@ class _HomeViewState extends State<HomeView> {
 
   final List<Widget> _pages = [
     const HomeContent(),
-    const PesananView(),
+    PesananView(),
     const Center(child: Text('Riwayat')),
     // ProfileView(),
     ProfilView(),

@@ -1,112 +1,86 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Pesanan {
-  String id;
-  final String alamat;
-  final String email;
-  final num ongkir;
-  final List<ProdukPesanan> produk;
-  final String status;
-  final Timestamp tanggalPesanan;
-  final num total;
-  final String userId;
+  String? id;
+  String? alamat;
+  String? email;
+  int? ongkir;
+  List<dynamic>? produk;
+  int? subtotalProduk;
+  Timestamp? tanggalPesanan;
+  int? total;
+  String? userId;
 
   Pesanan({
-    this.id = "",
-    required this.alamat,
-    required this.email,
-    required this.ongkir,
-    required this.produk,
-    required this.status,
-    required this.tanggalPesanan,
-    required this.total,
-    required this.userId,
+    this.id,
+    this.alamat,
+    this.email,
+    this.ongkir,
+    this.produk,
+    this.subtotalProduk,
+    this.tanggalPesanan,
+    this.total,
+    this.userId,
   });
 
-  // Factory constructor untuk membuat objek Pesanan dari JSON
+  // Konstruktor dari JSON
   factory Pesanan.fromJson(Map<String, dynamic> json) {
     return Pesanan(
-      id: json['id'] as String? ?? '',
-      alamat: json['alamat'] as String,
-      email: json['email'] as String,
-      ongkir: json['ongkir'] as num,
-      produk: (json['produk'] as List<dynamic>?)
-              ?.map((produkData) => ProdukPesanan.fromJson(produkData))
-              .toList() ??
-          [],
-      status: json['status'] as String,
-      tanggalPesanan: json['tanggalPesanan'] as Timestamp,
-      total: json['total'] as num,
-      userId: json['userId'] as String,
+      id: json['id'],
+      alamat: json['alamat'],
+      email: json['email'],
+      ongkir: _parseIntSafely(json['ongkir']),
+      produk: json['produk'],
+      subtotalProduk: _parseIntSafely(json['subtotalProduk']),
+      tanggalPesanan: json['tanggalPesanan'],
+      total: _parseIntSafely(json['total']),
+      userId: json['userId'],
     );
   }
 
-  // Factory constructor untuk membuat objek Pesanan dari Firestore DocumentSnapshot
-  factory Pesanan.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    data['id'] = doc.id; // Tambahkan ID dari dokumen
-    return Pesanan.fromJson(data);
+  // Metode pembantu untuk parsing integer dengan aman
+  static int? _parseIntSafely(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    return int.tryParse(value.toString());
   }
 
-  // Metode untuk mengkonversi objek Pesanan ke JSON
+  // Metode untuk konversi ke JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'alamat': alamat,
       'email': email,
       'ongkir': ongkir,
-      'produk': produk.map((p) => p.toJson()).toList(),
-      'status': status,
+      'produk': produk,
+      'subtotalProduk': subtotalProduk,
       'tanggalPesanan': tanggalPesanan,
       'total': total,
       'userId': userId,
     };
   }
-}
 
-// Class untuk detail produk dalam pesanan
-class ProdukPesanan {
-  String id;
-  final num harga;
-  final String images;
-  final num kuantitas;
-  final String nama;
-  final num stok;
-  final num subtotalProduk;
-
-  ProdukPesanan({
-    this.id = "",
-    required this.harga,
-    required this.images,
-    required this.kuantitas,
-    required this.nama,
-    required this.stok,
-    required this.subtotalProduk,
-  });
-
-  // Factory constructor untuk membuat objek ProdukPesanan dari JSON
-  factory ProdukPesanan.fromJson(Map<String, dynamic> json) {
-    return ProdukPesanan(
-      id: json['id'] as String? ?? '',
-      harga: json['harga'] as num,
-      images: json['images'] as String,
-      kuantitas: json['kuantitas'] as num,
-      nama: json['nama'] as String,
-      stok: json['stok'] as num,
-      subtotalProduk: json['subtotalProduk'] as num,
-    );
+  // Metode untuk mendapatkan nama produk pertama
+  String getProdukNama() {
+    if (produk != null && produk!.isNotEmpty) {
+      return produk![0]['nama'] ?? 'Produk Tidak Diketahui';
+    }
+    return 'Produk Tidak Diketahui';
   }
 
-  // Metode untuk mengkonversi objek ProdukPesanan ke JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'harga': harga,
-      'images': images,
-      'kuantitas': kuantitas,
-      'nama': nama,
-      'stok': stok,
-      'subtotalProduk': subtotalProduk,
-    };
+  // Metode untuk mendapatkan gambar produk pertama
+  String getProdukImage() {
+    if (produk != null && produk!.isNotEmpty) {
+      return produk![0]['images'] ?? '';
+    }
+    return '';
+  }
+
+  // Metode untuk mendapatkan status produk pertama
+  String getProdukStatus() {
+    if (produk != null && produk!.isNotEmpty) {
+      return produk![0]['status'] ?? 'Diproses';
+    }
+    return 'Diproses';
   }
 }
