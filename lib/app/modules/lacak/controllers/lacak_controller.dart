@@ -1,117 +1,124 @@
-
-  import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import 'package:progress_tracker/progress_tracker.dart';
 import 'package:waterxpress_customer/app/data/Pesanan.dart';
+import 'package:flutter/material.dart';
+import 'package:progress_tracker/progress_tracker.dart';
 
 class LacakController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Observable untuk index status saat ini
-  RxInt index = 0.obs;
-  // Status list untuk progress tracker dengan icon
-  List<Status> statusList = [
-    Status(name: 'Diproses', icon: Icons.pending_outlined, active: true),
-    Status(name: 'Dikemas', icon: Icons.build_circle_outlined, active: true),
-    Status(name: 'Dikirim', icon: Icons.local_shipping_outlined, active: true),
-    Status(name: 'Selesai', icon: Icons.check_circle_outline, active: true)
-  ];
+  // Observable untuk pesanan dengan stream
+  final Rx<Pesanan?> pesanan = Rx<Pesanan?>(null);
+  
+  // Status loading
+  final RxBool isLoading = false.obs;
+  
+  // Current status index - buat bisa diupdate real-time
+  final RxInt currentStatusIndex = RxInt(0);
 
-  // Stream untuk mendapatkan pesanan yang menunggu konfirmasi
-  // Stream<List<Pesanan>> getPesananMenungguKonfirmasi() {
-  //   return _firestore
-  //     .collection('Pesanan')
-  //     .snapshots()
-  //     .map((snapshot) =>
-  //       snapshot.docs.map((doc) =>
-  //         Pesanan.fromMap(doc.data() as Map<String, dynamic>)
-  //       ).toList()
-  //     );
-  // }
-  // Method untuk mendapatkan index terakhir dari Firestore
-  Future<void> initializeIndexFromFirestore(String pesananId) async {
-    try {
-      DocumentSnapshot doc =
-          await _firestore.collection('Pesanan').doc(pesananId).get();
+  // List status tracking dengan observable
+  RxList<Status> statusList = RxList<Status>([
+    Status(name: 'Diproses', icon: Icons.pending_outlined, active: false),
+    Status(name: 'Dikemas', icon: Icons.build_circle_outlined, active: false),
+    Status(name: 'Dikirim', icon: Icons.local_shipping_outlined, active: false),
+    Status(name: 'Selesai', icon: Icons.check_circle_outline, active: false)
+  ]);
 
-      if (doc.exists) {
-        String? currentStatus = doc.get('status');
-        int savedIndex =
-            statusList.indexWhere((status) => status.name == currentStatus);
+  // Stream subscription untuk real-time update
+  StreamSubscription? _pesananSubscription;
 
-        // Set index ke status terakhir yang tersimpan
-        if (savedIndex != -1) {
-          index.value = savedIndex;
-        }
-      }
-    } catch (e) {
-      print('Error initializing index: $e');
+  // Method untuk update status list berdasarkan current status
+  void _updateStatusList(String currentStatus) {
+    // Reset semua status terlebih dahulu
+    for (var status in statusList) {
+      status.active = false;
     }
+
+    // Update status sesuai current status
+    switch (currentStatus.toLowerCase()) {
+      case 'diproses':
+        statusList[0].active = true;
+        currentStatusIndex.value = 0;
+        break;
+      case 'dikemas':
+        statusList[0].active = true;
+        statusList[1].active = true;
+        currentStatusIndex.value = 1;
+        break;
+      case 'dikirim':
+        statusList[0].active = true;
+        statusList[1].active = true;
+        statusList[2].active = true;
+        currentStatusIndex.value = 2;
+        break;
+      case 'selesai':
+        statusList[0].active = true;
+        statusList[1].active = true;
+        statusList[2].active = true;
+        statusList[3].active = true;
+        currentStatusIndex.value = 3;
+        break;
+      default:
+        currentStatusIndex.value = 0;
+    }
+
+    // Trigger update pada statusList
+    statusList.refresh();
   }
 
-  // Metode untuk memperbarui status pesanan
-  Future<bool> updateStatusPesanan(String? pesananId, String status) async {
+  // Method untuk listen perubahan pesanan secara real-time
+  void listenToPesananChanges(String pesananId) {
     try {
-      // Validasi pesananId
-      if (pesananId == null || pesananId.isEmpty) {
-        print('Error: ID Pesanan tidak valid');
-        return false;
-      }
+      // Cancel existing subscription jika ada
+      _pesananSubscription?.cancel();
 
-      // Update status langsung menggunakan ID dokumen
-      await _firestore.collection('Pesanan').doc(pesananId).update({
-        'status': status, 'updatedAt': FieldValue.serverTimestamp(),
-        'currentStatusIndex': index.value // Simpan index status saat ini
+      // Mulai listen perubahan dokumen
+      _pesananSubscription = _firestore
+          .collection('Pesanan')
+          .doc(pesananId)
+          .snapshots()
+          .listen((DocumentSnapshot snapshot) {
+        if (snapshot.exists) {
+          // Konversi data ke model Pesanan
+          Pesanan pesananData = Pesanan.fromJson(
+            snapshot.data() as Map<String, dynamic>
+          );
+          
+          // Update pesanan
+          pesanan.value = pesananData;
+
+          // Update status list dan index
+          _updateStatusList(pesananData.status ?? 'Pesanan Dibuat');
+        } else {
+          pesanan.value = null;
+          currentStatusIndex.value = 0;
+          
+          // Reset status list
+          _updateStatusList('Pesanan Dibuat');
+        }
+      }, onError: (error) {
+        print('Error listening to pesanan changes: $error');
+        pesanan.value = null;
+        currentStatusIndex.value = 0;
+        
+        // Reset status list
+        _updateStatusList('Pesanan Dibuat');
       });
-
-      // Logging untuk debugging
-      print('Pesanan diupdate:');
-      print('Document ID: $pesananId');
-      print('New Status: $status');
-
-      return true;
     } catch (e) {
-      print('Error updating status: $e');
-      return false;
+      print('Error setting up real-time listener: $e');
     }
   }
 
-  // Metode untuk maju ke status berikutnya
-  void nextButton(String pesananId) {
-    if (index.value < statusList.length - 1) {
-      index.value++;
-      // Update status langsung setelah tombol ditekan
-      // Menandai status yang aktif
-      statusList[index.value].active = true;
-      updateStatusPesanan(pesananId, statusList[index.value].name);
-    }
+  // Method untuk menginisialisasi status
+  void initializeStatusForPesanan(String pesananId) {
+    listenToPesananChanges(pesananId);
   }
 
-  // Metode untuk mendapatkan detail pesanan berdasarkan ID
-  Future<Pesanan?> getPesananById(String id) async {
-    // print ($ id');
-    try {
-      DocumentSnapshot doc =
-          await _firestore.collection('Pesanan').doc(id).get();
-
-      if (doc.exists) {
-        // Membuat objek Pesanan dengan menambahkan ID dokumen
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        data['id'] = doc.id; // Menambahkan ID dokumen ke dalam map data
-
-        // Ambil index status yang tersimpan
-        int? savedIndex = data['currentStatusIndex'];
-        if (savedIndex != null) {
-          index.value = savedIndex;
-        }
-
-        return Pesanan.fromJson(data);
-      }
-      return null;
-    } catch (e) {
-      print('Error getting pesanan: $e');
-      return null;
-    }
+  @override
+  void onClose() {
+    // Pastikan subscription dibatalkan saat controller ditutup
+    _pesananSubscription?.cancel();
+    super.onClose();
   }
 }

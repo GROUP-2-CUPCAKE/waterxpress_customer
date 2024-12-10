@@ -45,7 +45,7 @@ class RiwayatPesananView extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.only(bottom: 8),
               child: Text(
-                'Pesanan yang diproses',
+                'Pesanan yang selesai',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
