@@ -19,6 +19,8 @@ import '../modules/splashscreen/bindings/splashscreen_binding.dart';
 import '../modules/splashscreen/views/splashscreen_view.dart';
 import '../modules/lacak/views/lacak_view.dart';
 import '../modules/lacak/bindings/lacak_binding.dart';
+import '../modules/pesanan/views/pesanan_view.dart';
+import '../modules/pesanan/bindings/pesanan_binding.dart';
 part 'app_routes.dart';
 
 class AppPages {
@@ -63,6 +65,11 @@ class AppPages {
           // pesananId: 'id',
           ),
       binding: RincianPesananBinding(),
+    ),
+    GetPage(
+      name: Routes.PESANAN,
+      page: () =>PesananView(),
+      binding: PesananBinding(),
     ),
     GetPage(
       name: _Paths.LACAK,

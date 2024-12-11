@@ -9,6 +9,8 @@ import '../../pesanan/views/pesanan_view.dart';
 import '../../profil/views/profil_view.dart';
 import '../controllers/home_controller.dart';
 import '../../riwayat_pesanan/views/riwayat_pesanan_view.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -50,23 +52,106 @@ class _HomeViewState extends State<HomeView> {
                     children: [
                       Row(
                         children: [
-                          const CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Colors.white,
-                            child: Icon(
-                              Icons.account_circle,
-                              size: 40,
-                              color: Color(0xFF0288D1),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Text(
-                            'WaterXpress',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                          FutureBuilder<DocumentSnapshot>(
+                            future: FirebaseFirestore.instance
+                                .collection('customer')
+                                .doc(FirebaseAuth.instance.currentUser!.uid)
+                                .get(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Colors.white,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Color(0xFF0288D1), 
+                                            width: 2,  
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    const Text(
+                                      '',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }
+
+                              if (snapshot.hasError || !snapshot.hasData) {
+                                return Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Colors.white,
+                                      child: Icon(
+                                        Icons.account_circle,
+                                        size: 40,
+                                        color: Color(0xFF0288D1),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    const Text(
+                                      'halo Pengguna',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }
+
+                              // Ambil username dari dokumen
+                              String username = snapshot.data!['username'] ?? 'Customer';
+                              String profileImageUrl = snapshot.data!['profileImageUrl'] ?? '';
+
+                              return Row(
+                                children: [
+                                  profileImageUrl.isNotEmpty
+                                      ? CircleAvatar(
+                                          radius: 20,
+                                          backgroundColor: Colors.white,
+                                          backgroundImage: NetworkImage(profileImageUrl),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: Color(0xFF0288D1), 
+                                                width: 2,  
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : CircleAvatar(
+                                          radius: 20,
+                                          backgroundColor: Colors.white,
+                                          child: Icon(
+                                            Icons.account_circle,
+                                          ),
+                                        ),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    'halo $username!',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }
                           ),
                           const Spacer(),
                           PopupMenuButton<String>(
@@ -223,7 +308,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: Image.asset(
-                    'assets/images/banner3.jpg',
+                    'assets/images/banner5.jpg',
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -394,28 +479,34 @@ class HomeContent extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 0),
                                   ElevatedButton.icon(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              DetailPesananView(
-                                                  productId: produk.id),
-                                        ),
-                                      );
-                                    },
-                                    icon: Icon(Icons.shopping_cart,
-                                        color: Colors.white),
+                                    onPressed: produk.stok > 0 
+                                      ? () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => DetailPesananView(
+                                                productId: produk.id
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      : null, // Set to null to disable the button
+                                    icon: Icon(
+                                      Icons.shopping_cart, 
+                                      color: produk.stok > 0 ? Colors.white : Colors.grey
+                                    ),
                                     label: Text(
-                                      'Pesan Sekarang',
+                                      produk.stok > 0 ? 'Pesan Sekarang' : 'Stok Habis',
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                        color: produk.stok > 0 ? Colors.white : Colors.grey,
                                       ),
                                     ),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xFF0288D1),
+                                      backgroundColor: produk.stok > 0 
+                                        ? Color(0xFF0288D1) 
+                                        : Colors.grey.shade300,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(10),
                                       ),

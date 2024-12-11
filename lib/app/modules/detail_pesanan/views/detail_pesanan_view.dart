@@ -111,22 +111,26 @@ class DetailPesananView extends StatelessWidget {
                             ),
                             const SizedBox(width: 16),
                             // Tombol tambah pesanan
-                            ElevatedButton(
-                              onPressed: () {
-                                detailController.tambahProduk(product);
-                                Navigator.pop(context);
-                              },
+                           ElevatedButton(
+                              onPressed: product.stok > 0 
+                                ? () {
+                                    detailController.tambahProduk(product);
+                                    Navigator.pop(context);
+                                  } 
+                                : null, // Set to null to disable the button
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Color(0xFF0288D1),
+                                backgroundColor: product.stok > 0 
+                                  ? Color(0xFF0288D1) 
+                                  : Colors.grey, // Set background color to grey if out of stock
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 12.0,
                                   vertical: 8.0,
                                 ),
                                 textStyle: const TextStyle(fontSize: 12),
                               ),
-                              child: const Text(
-                                'Tambah Pesanan',
-                                style: TextStyle(color: Colors.white),
+                              child: Text(
+                                product.stok > 0 ? 'Tambah Pesanan' : 'Tambah Pesanan', // Change text based on stock
+                                style: TextStyle(color: product.stok > 0 ? Colors.white : Colors.grey), // Change text color based on stock
                               ),
                             ),
                           ],
@@ -147,8 +151,11 @@ class DetailPesananView extends StatelessWidget {
   Widget build(BuildContext context) {
     final DetailPesananController controller =
         Get.put(DetailPesananController());
+      // Tambahkan refresh method
     controller.loadProductDetails(productId);
-    controller.fetchAllProducts(); // Fetch all products when view is loaded
+    controller.fetchAllProducts();
+    controller.refreshUserLocation();
+ 
 
     return Scaffold(
       appBar: PreferredSize(
@@ -189,7 +196,7 @@ class DetailPesananView extends StatelessWidget {
         final product = controller.selectedProduct.value;
 
         if (product == null) {
-          return const Center(child: Text('Produk tidak ditemukan.'));
+          return const Center(child: Text(''));
         }
 
         return SingleChildScrollView(

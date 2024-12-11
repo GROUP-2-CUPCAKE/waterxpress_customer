@@ -367,7 +367,8 @@ class RincianPesananView extends StatelessWidget {
             onPressed: () {
               // Panggil metode pembatalan pesanan
               controller.batalkanPesanan();
-              Get.back(); // Tutup dialog
+              Get.back();
+              Get.back();
             },
             child: const Text('Ya, Batalkan',
                 style: TextStyle(color: Colors.white)),

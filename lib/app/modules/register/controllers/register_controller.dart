@@ -10,11 +10,14 @@ class RegisterController extends GetxController {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
+
   FirebaseAuth auth = FirebaseAuth.instance;
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   var obscureText = true.obs;
   var obscureText2 = true.obs;
+
+  final String defaultProfileImageUrl = 'https://firebasestorage.googleapis.com/v0/b/katalog-makanan-45b5c.appspot.com/o/Produk%2Fdata%2Fuser%2F0%2Fcom.example.waterxpress_admin%2Fcache%2F06a4c880-f4b3-40fa-93f6-8d2c4a9228ac%2F1000302020.jpg?alt=media&token=4ae0e9f1-3259-4aae-9113-60bd0fa28139';
 
   void togglePasswordView() {
     obscureText.value = !obscureText.value;
@@ -110,6 +113,7 @@ class RegisterController extends GetxController {
         'nohp': nohp,
         'email': email,
         'uid': uid,
+        'profileImageUrl': defaultProfileImageUrl,
       });
 
       await userCredential.user!.sendEmailVerification();
