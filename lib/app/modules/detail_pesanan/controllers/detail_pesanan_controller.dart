@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import '/app/data/Produk.dart';
+import 'package:waterxpress_customer/app/routes/app_pages.dart';
 
 class DetailPesananController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -60,6 +61,31 @@ class DetailPesananController extends GetxController {
     } catch (e) {
       print('Error fetching customer data: $e');
     }
+  }
+
+  void refreshUserLocation() async {
+    try {
+      // Ambil user saat ini
+      final user = FirebaseAuth.instance.currentUser;
+      
+      // Cek apakah user ada
+      if (user != null) {
+        // Ambil dokumen user
+        final snapshot = await FirebaseFirestore.instance
+            .collection('customer')
+            .doc(user.uid)
+            .get();
+        
+        // Update alamat jika dokumen ada
+        if (snapshot.exists) {
+          alamat.value = snapshot['alamat'] ?? '';
+          ongkir.value = (snapshot['ongkir'] as num?)?.toInt() ?? 0;
+        }
+      }
+    } catch (e) {
+      print('Gagal refresh alamat: $e');
+    }
+
   }
 
   // Fetch product data from the 'Produk' collection
@@ -266,12 +292,11 @@ class DetailPesananController extends GetxController {
       // Tambahkan produk utama
       if (selectedProduct.value != null) {
         var produkUtamaData = selectedProduct.value!.toJson();
-        // produkUtamaData['kuantitas'] = 1; // Default kuantitas 1
-        // Gunakan kuantitas aktual dari productQuantities
         produkUtamaData['kuantitas'] =
             productQuantities[selectedProduct.value!.id] ?? 1;
         semuaProduk.add(produkUtamaData);
       }
+
       if (!cekKetersediaanStok()) {
         return;
       }
@@ -299,20 +324,18 @@ class DetailPesananController extends GetxController {
       DocumentReference pesananRef =
           await _firestore.collection('Pesanan').add(orderData);
 
-      // Update stok produk
       await _kurangiStokProduk(semuaProduk);
 
-      print('Pesanan berhasil disimpan dengan ID: ${pesananRef.id}');
-
-      // Reset data setelah pesanan dibuat
+      print('Pesanan berhasil disimpan dengan ID: ${pesananRef.id}'); 
       _resetPesanan();
 
       Get.snackbar('Sukses', 'Pesanan berhasil dibuat');
+      Get.offNamed(Routes.HOME);
       // Reset data tambahan
       resetTambahItem();
     } catch (e) {
       print('Error saving order: $e');
-      Get.snackbar('Error', 'Gagal membuat pesanan');
+      Get.snackbar('Error', 'Gagal membuat pesanan: $e');
     }
   }
 
@@ -373,8 +396,7 @@ class DetailPesananController extends GetxController {
 
       String status = pesananDoc.get('status') ?? '';
 
-      // Hanya bisa membatalkan pesanan dengan status tertentu
-      if (status == 'Menunggu Konfirmasi') {
+      if (status == 'Diproses') {
         await _firestore.collection('Pesanan').doc(pesananId).update({
           'status': 'Dibatalkan',
           'tanggalPembatalan': FieldValue.serverTimestamp()

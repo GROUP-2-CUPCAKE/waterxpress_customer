@@ -48,19 +48,27 @@ class ProfilView extends StatelessWidget {
                     // Foto Profil dan Edit Foto
                     Stack(
                       children: [
-                        CircleAvatar(
-                          radius: 60,
-                          child: Icon(
-                            Icons.person,
-                            size: 60,
-                          ),
-                        ),
+                        Obx(() {
+                          return controller.profileImageUrl.value.isNotEmpty
+                              ? CircleAvatar(
+                                  radius: 60,
+                                  backgroundImage: NetworkImage(controller.profileImageUrl.value),
+                                )
+                              : CircleAvatar(
+                                  radius: 60,
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 60,
+                                  ),
+                                );
+                        }),
                         Positioned(
                           bottom: 0,
                           right: 0,
                           child: InkWell(
                             onTap: () {
                               // Aksi edit foto profil
+                              // controller.pickAndUploadProfileImage();
                             },
                             child: CircleAvatar(
                               backgroundColor: Colors.blueAccent,

@@ -15,6 +15,7 @@ class ProfilController extends GetxController {
   // var nohp = ''.obs;
   // var distance = RxDouble(0.0); // Jarak ke toko
   // var shippingCost = RxInt(0); // Biaya ongkir
+  final RxString profileImageUrl = ''.obs;
   var isLoading = true.obs;
   var nama = ''.obs;
   var nohp = ''.obs;
@@ -46,7 +47,7 @@ class ProfilController extends GetxController {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         DocumentSnapshot snapshot = await FirebaseFirestore.instance
-            .collection('customers')
+            .collection('customer')
             .doc(user.uid)
             .get();
 
@@ -55,6 +56,7 @@ class ProfilController extends GetxController {
           nohp.value = snapshot['nohp'] ?? '';
           alamat.value = snapshot['alamat'] ?? '';
           ongkir.value = snapshot['ongkir'] ?? 0.0;
+          profileImageUrl.value = snapshot['profileImageUrl'] ?? '';
           // Anda bisa mengupdate jarak dan ongkir sesuai kebutuhan
         }
       }
@@ -87,6 +89,7 @@ class ProfilController extends GetxController {
         nohp.value = userData['nohp'] ?? 'N/A';
         alamat.value = userData['alamat'] ?? '';
         ongkir.value = userData['ongkir'] ?? 0;
+        profileImageUrl.value = userData['profileImageUrl'] ?? '';
       } else {
         throw Exception('User data not found');
       }
@@ -179,7 +182,10 @@ class ProfilController extends GetxController {
       distance.value = dist;
 
       // Hitung biaya ongkir
-      if (dist <= 2) {
+      if (dist <= 1) {
+        ongkir.value = 0;
+      }
+      else if (dist <= 2) {
         ongkir.value = 1000;
       } else if (dist <= 3) {
         ongkir.value = 2000;
@@ -205,37 +211,58 @@ class ProfilController extends GetxController {
   }
 
   Future<void> updateAddressAndShippingCost() async {
-    try {
-      String? email = FirebaseAuth.instance.currentUser?.email;
-      if (email == null) {
-        throw Exception('User not logged in');
-      }
+  try {
 
-      if (alamat.value.isEmpty || ongkir.value == 0) {
-        Get.snackbar('Error', 'Alamat atau ongkir tidak valid.');
-        return;
-      }
-
-      var customerRef = FirebaseFirestore.instance
-          .collection('customer')
-          .where('email', isEqualTo: email);
-
-      var customerDoc = await customerRef.get();
-
-      if (customerDoc.docs.isNotEmpty) {
-        // Update alamat dan ongkir berdasarkan email
-        await customerDoc.docs.first.reference.update({
-          'alamat': alamat.value,
-          'ongkir': ongkir.value,
-        });
-
-        Get.snackbar('Sukses', 'Alamat dan ongkir berhasil disimpan.');
-      } else {
-        throw Exception('User not found in Firestore');
-      }
-    } catch (e) {
-      print('Error updating address and shipping cost: $e');
-      Get.snackbar('Error', 'Gagal menyimpan alamat dan ongkir.');
+    // Validasi input
+    if (alamat.value.isEmpty) {
+      Get.snackbar('Error', 'Alamat tidak boleh kosong');
+      return;
     }
+
+    // Dapatkan user saat ini
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      throw Exception('Pengguna tidak terautentikasi');
+    }
+
+    // Referensi dokumen pelanggan
+    DocumentReference customerDocRef = FirebaseFirestore.instance
+        .collection('customer')
+        .doc(currentUser.uid);
+
+    // Siapkan data update
+    Map<String, dynamic> updateData = {
+      'uid': currentUser.uid,
+      'alamat': alamat.value,
+      'ongkir': ongkir.value,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+    // Lakukan update atau set dengan merge
+    await customerDocRef.set(updateData, SetOptions(merge: true));
+
+    // Tampilkan pesan sukses
+    Get.snackbar(
+      'Sukses', 
+      'Alamat dan ongkos kirim berhasil diperbarui',
+    );
+
+    // Refresh data setelah update
+    loadUserProfile();
+
+  } on FirebaseException catch (firebaseError) {
+
+    Get.snackbar(
+      'Error Firebase', 
+      firebaseError.message ?? 'Terjadi kesalahan pada Firebase',
+    );
+
+  } catch (e) {
+
+    Get.snackbar(
+      'Error', 
+      'Gagal menyimpan alamat dan ongkir: $e',
+    );
   }
+}
+
 }

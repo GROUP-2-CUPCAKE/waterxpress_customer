@@ -51,11 +51,11 @@ class LacakView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('Pesanan tidak ditemukan.'),
-                ElevatedButton(
-                  onPressed: () => Get.back(),
-                  child: const Text('Kembali'),
-                )
+                const Text(''),
+                // ElevatedButton(
+                //   onPressed: () => Get.back(),
+                //   child: const Text('Kembali'),
+                // )
               ],
             ),
           );
