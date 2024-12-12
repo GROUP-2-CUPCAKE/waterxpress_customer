@@ -46,7 +46,7 @@ dependencies:
   get_storage: ^2.1.1
   geolocator: ^13.0.2
   geocoding: ^3.0.0
-  url_launcher: ^6.3.1
+  url_launcher: ^6.0.10
   progress_tracker: ^0.0.12
   intl: ^0.20.1
   image_picker: ^1.1.2

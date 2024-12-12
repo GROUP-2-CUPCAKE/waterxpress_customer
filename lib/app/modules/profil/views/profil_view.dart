@@ -23,12 +23,12 @@ class ProfilView extends StatelessWidget {
         ),
       ),
       body: Container(
-        padding: EdgeInsets.all(10),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFF80D8FF).withOpacity(0.8),
-              Color(0xFF40C4FF).withOpacity(0.8),
+              const Color(0xFF80D8FF).withOpacity(0.8),
+              const Color(0xFF40C4FF).withOpacity(0.8),
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -37,7 +37,7 @@ class ProfilView extends StatelessWidget {
         child: Center(
           child: Obx(() {
             if (controller.isLoading.value) {
-              return CircularProgressIndicator(
+              return const CircularProgressIndicator(
                 color: Colors.white,
               );
             } else if (controller.latitude.value != null &&
@@ -54,7 +54,7 @@ class ProfilView extends StatelessWidget {
                                   radius: 60,
                                   backgroundImage: NetworkImage(controller.profileImageUrl.value),
                                 )
-                              : CircleAvatar(
+                              : const CircleAvatar(
                                   radius: 60,
                                   child: Icon(
                                     Icons.person,
@@ -65,12 +65,11 @@ class ProfilView extends StatelessWidget {
                         Positioned(
                           bottom: 0,
                           right: 0,
-                          child: InkWell(
-                            onTap: () {
-                              // Aksi edit foto profil
-                              // controller.pickAndUploadProfileImage();
+                          child: GestureDetector(
+                            onTap: () async {
+                              await controller.editProfilePhoto();
                             },
-                            child: CircleAvatar(
+                            child: const CircleAvatar(
                               backgroundColor: Colors.blueAccent,
                               radius: 16,
                               child: Icon(
@@ -105,7 +104,6 @@ class ProfilView extends StatelessWidget {
                             const SizedBox(height: 5),
                             Text(
                               controller.nama.value,
-                              // 'Vera',
                               style: const TextStyle(
                                   fontSize: 16, color: Colors.black87),
                             ),
@@ -121,7 +119,6 @@ class ProfilView extends StatelessWidget {
                             const SizedBox(height: 5),
                             Text(
                               controller.nohp.value,
-                              // '0812345',
                               style: const TextStyle(
                                   fontSize: 16, color: Colors.black87),
                             ),
@@ -129,7 +126,7 @@ class ProfilView extends StatelessWidget {
                         ),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Card(
                       elevation: 8,
                       shape: RoundedRectangleBorder(
@@ -148,13 +145,13 @@ class ProfilView extends StatelessWidget {
                                 color: Color(0xFF0288D1),
                               ),
                             ),
-                            SizedBox(height: 5),
+                            const SizedBox(height: 5),
                             Text(
                               controller.alamat.value,
-                              style: TextStyle(
+                              style: const TextStyle(
                                   fontSize: 16, color: Colors.black87),
                             ),
-                            Divider(),
+                            const Divider(),
                             const Text(
                               'Jarak ke Toko:',
                               style: TextStyle(
@@ -163,22 +160,22 @@ class ProfilView extends StatelessWidget {
                                 color: Color(0xFF0288D1),
                               ),
                             ),
-                            SizedBox(height: 5),
+                            const SizedBox(height: 5),
                             Text(
                               '${controller.distance.value.toStringAsFixed(2)} km',
                               style: const TextStyle(
                                   fontSize: 16, color: Colors.black87),
                             ),
-                            Divider(),
-                            Text(
+                            const Divider(),
+                            const Text(
                               'Biaya Ongkir:',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF0288D1),
                               ),
                             ),
-                            SizedBox(height: 5),
+                            const SizedBox(height: 5),
                             Text(
                               'Rp ${controller.ongkir.value}',
                               style: TextStyle(
@@ -224,7 +221,9 @@ class ProfilView extends StatelessWidget {
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 8.0),
                             child: ElevatedButton.icon(
-                              onPressed: controller.openMap,
+                              onPressed: () {
+                                controller.openGoogleMaps();
+                              },
                               icon: const Icon(Icons.map_outlined,
                                   color: Colors.white),
                               label: const Text(
@@ -248,7 +247,7 @@ class ProfilView extends StatelessWidget {
                         ),
                       ],
                     ),
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
                     Card(
                       elevation: 5,
                       shape: RoundedRectangleBorder(
@@ -259,7 +258,7 @@ class ProfilView extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Masukkan Alamat Baru:',
                               style: TextStyle(
                                 fontSize: 16,
@@ -267,7 +266,7 @@ class ProfilView extends StatelessWidget {
                                 color: Color(0xFF0288D1),
                               ),
                             ),
-                            SizedBox(height: 10),
+                            const SizedBox(height: 10),
                             TextField(
                               onChanged: (value) =>
                                   controller.inputAddress.value = value,
@@ -286,9 +285,9 @@ class ProfilView extends StatelessWidget {
                                   child: ElevatedButton.icon(
                                     onPressed:
                                         controller.updateCoordinatesFromAddress,
-                                    icon: Icon(Icons.edit_location_outlined,
+                                    icon: const Icon(Icons.edit_location_outlined,
                                         color: Colors.white),
-                                    label: Text(
+                                    label: const Text(
                                       'Perbarui Alamat',
                                       style: TextStyle(
                                         fontSize: 12,
@@ -304,14 +303,14 @@ class ProfilView extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                     width: 10), // Menambah jarak antar tombol
                                 Expanded(
                                   child: ElevatedButton.icon(
                                     onPressed:
                                         controller.updateAddressAndShippingCost,
                                     icon: Icon(Icons.save, color: Colors.white),
-                                    label: Text(
+                                    label: const Text(
                                       'Simpan Alamat',
                                       style: TextStyle(
                                         fontSize: 12,
