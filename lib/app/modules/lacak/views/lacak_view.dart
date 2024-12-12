@@ -120,7 +120,7 @@ class LacakView extends StatelessWidget {
                           () => ProgressTracker(
                             currentIndex: statusController.currentStatusIndex.value,
                             statusList: statusController.statusList,
-                            activeColor: Colors.green,
+                            activeColor: Colors.blue,
                             inActiveColor: Colors.grey,
                           ),
                         ),

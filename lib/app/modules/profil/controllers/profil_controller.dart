@@ -1,6 +1,10 @@
+import 'dart:io';
+
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -66,6 +70,53 @@ class ProfilController extends GetxController {
       isLoading(false);
     }
   }
+
+
+  Future<void> editProfilePhoto() async {
+  try {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      isLoading.value = true;
+
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        throw Exception('Pengguna tidak terautentikasi');
+      }
+
+      String filePath = 'profile_pictures/${currentUser.uid}.jpg';
+
+      File imageFile = File(pickedFile.path);
+
+      UploadTask uploadTask = FirebaseStorage.instance.ref(filePath).putFile(imageFile);
+      TaskSnapshot snapshot = await uploadTask;
+
+      String downloadUrl = await snapshot.ref.getDownloadURL();
+
+      DocumentReference customerDocRef = FirebaseFirestore.instance.collection('customer').doc(currentUser.uid);
+      await customerDocRef.update({
+        'profileImageUrl': downloadUrl,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      profileImageUrl.value = downloadUrl;
+
+      Get.snackbar(
+        'Sukses',
+        'Foto profil berhasil diperbarui.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+
+    } else {
+      Get.snackbar('Info', 'Tidak ada gambar yang dipilih.');
+    }
+  } catch (e) {
+    Get.snackbar('Error', 'Gagal memperbarui foto profil: $e');
+  } finally {
+    isLoading.value = false;
+  }
+  }
+
 
   Future<void> fetchUserData() async {
     try {
@@ -195,20 +246,34 @@ class ProfilController extends GetxController {
     }
   }
 
-  Future<void> openMap() async {
-    final lat = latitude.value;
-    final lng = longitude.value;
-    if (lat != null && lng != null) {
-      final Uri googleMapUrl = Uri.parse('geo:$lat,$lng?q=$lat,$lng');
-      if (await canLaunchUrl(googleMapUrl)) {
-        await launchUrl(googleMapUrl, mode: LaunchMode.externalApplication);
-      } else {
-        Get.snackbar('Error', 'Tidak dapat membuka peta.');
-      }
-    } else {
+  Future<void> openGoogleMaps() async {
+  try {
+    final double lat = latitude.value;
+    final double lng = longitude.value;
+
+    // Periksa apakah koordinat tersedia
+    if (lat == 0.0 && lng == 0.0) {
       Get.snackbar('Error', 'Koordinat tidak tersedia.');
+      return;
     }
+
+    // Format URL untuk Google Maps
+    final Uri googleMapsUrl = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+    );
+
+    // Periksa apakah URL bisa dibuka
+    if (await canLaunchUrl(googleMapsUrl)) {
+      // Buka URL menggunakan aplikasi eksternal
+      await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
+    } else {
+      Get.snackbar('Error', 'Tidak dapat membuka Google Maps.');
+    }
+  } catch (e) {
+    // Tangani error jika ada
+    Get.snackbar('Error', 'Terjadi kesalahan: $e');
   }
+}
 
   Future<void> updateAddressAndShippingCost() async {
   try {
@@ -264,5 +329,4 @@ class ProfilController extends GetxController {
     );
   }
 }
-
 }

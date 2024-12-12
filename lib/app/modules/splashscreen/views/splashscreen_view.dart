@@ -6,21 +6,19 @@ import '/app/routes/app_pages.dart';
 class SplashscreenView extends StatelessWidget {
   const SplashscreenView({super.key});
 
-  @override
+   @override
   Widget build(BuildContext context) {
     final authC = Get.find<LoginController>();
 
-    Future.delayed(const Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 3), () {
       if (authC.isUserLoggedIn()) {
         Get.offAllNamed(Routes.HOME);
       } else {
         Get.offAllNamed(Routes.LOGIN);
       }
     });
-    double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: Colors.blue[200],
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -29,22 +27,36 @@ class SplashscreenView extends StatelessWidget {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: Center(
+        child: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: screenHeight * 0.3),
-              const CircleAvatar(
-                radius: 110,
-                backgroundImage: AssetImage('assets/images/logo1.jpeg'),
+              // Expanded to push content to the center
+              Spacer(flex: 2),
+              
+              // Centered CircleAvatar
+              Center(
+                child: CircleAvatar(
+                  radius: 110,
+                  backgroundImage: AssetImage('assets/images/logo.png'),
+                ),
               ),
-              const SizedBox(height: 30),
-              const CircularProgressIndicator.adaptive(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              
+              SizedBox(height: 30),
+              
+              // Centered Progress Indicator
+              Center(
+                child: CircularProgressIndicator.adaptive(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
               ),
-              SizedBox(height: screenHeight * 0.3),
-              const Padding(
+              
+              // Expanded to push content to the bottom
+              Spacer(flex: 2),
+              
+              // Centered Text
+              Padding(
                 padding: EdgeInsets.only(bottom: 20.0),
                 child: Text(
                   "by CupCake Team",
