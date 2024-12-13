@@ -37,7 +37,7 @@ class RincianPesananView extends StatelessWidget {
               },
             ),
             title: const Text(
-              'Detail Pemesanan',
+              'Rincian Pesanan',
               style: TextStyle(color: Colors.white),
             ),
             centerTitle: true,

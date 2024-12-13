@@ -397,24 +397,37 @@ class HomeContent extends StatelessWidget {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.shopping_basket_outlined,
-                          size: 50,
-                          color: Colors.grey,
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Tidak ada produk tersedia',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  );
-                }
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset('assets/images/image.png', 
+                          width: 200,
+                          height: 200,
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Tidak ada produk yang tersedia',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black54,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Produk sedang kosong',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
 
                 return ListView.builder(
                   shrinkWrap: true,

@@ -47,11 +47,11 @@ class LacakView extends StatelessWidget {
         // Cek apakah pesanan ditemukan
         final pesanan = lacakController.pesanan.value;
         if (pesanan == null) {
-          return Center(
+          return const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(''),
+                Text(''),
                 // ElevatedButton(
                 //   onPressed: () => Get.back(),
                 //   child: const Text('Kembali'),
@@ -120,7 +120,7 @@ class LacakView extends StatelessWidget {
                           () => ProgressTracker(
                             currentIndex: statusController.currentStatusIndex.value,
                             statusList: statusController.statusList,
-                            activeColor: Colors.blue,
+                            activeColor: Colors.green,
                             inActiveColor: Colors.grey,
                           ),
                         ),
