@@ -18,7 +18,7 @@ class PesananView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Pesanan',
+          'Daftar Pesanan',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -50,7 +50,7 @@ class PesananView extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: Colors.blue,
                 ),
               ),
             ),
@@ -67,10 +67,33 @@ class PesananView extends StatelessWidget {
 
                   // Tampilkan pesan jika tidak ada data
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        'Tidak ada pesanan',
-                        style: TextStyle(fontSize: 16),
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset('assets/images/image.png', 
+                          width: 200,
+                          height: 200,
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Tidak ada pesanan',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black54,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Kamu belum memiliki pesanan apapun',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
                     );
                   }
@@ -213,7 +236,7 @@ class PesananView extends StatelessWidget {
                                 color: Colors.black87,
                               ),
                             ),
-                            const SizedBox(width: 8), // Tambahkan jarak antar teks
+                            const SizedBox(width: 8), 
                             Text(
                               tanggalPesanan,
                               style: const TextStyle(

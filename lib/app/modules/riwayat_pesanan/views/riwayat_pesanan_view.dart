@@ -17,7 +17,7 @@ class RiwayatPesananView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Pesanan',
+          'Riwayat',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
