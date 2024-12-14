@@ -6,7 +6,7 @@ import '/app/routes/app_pages.dart';
 class SplashscreenView extends StatelessWidget {
   const SplashscreenView({super.key});
 
-   @override
+  @override
   Widget build(BuildContext context) {
     final authC = Get.find<LoginController>();
 
@@ -32,9 +32,7 @@ class SplashscreenView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Expanded to push content to the center
               Spacer(flex: 2),
-              
               // Centered CircleAvatar
               Center(
                 child: CircleAvatar(
@@ -42,19 +40,15 @@ class SplashscreenView extends StatelessWidget {
                   backgroundImage: AssetImage('assets/images/logo.png'),
                 ),
               ),
-              
               SizedBox(height: 30),
-              
               // Centered Progress Indicator
               Center(
                 child: CircularProgressIndicator.adaptive(
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ),
-              
               // Expanded to push content to the bottom
               Spacer(flex: 2),
-              
               // Centered Text
               Padding(
                 padding: EdgeInsets.only(bottom: 20.0),

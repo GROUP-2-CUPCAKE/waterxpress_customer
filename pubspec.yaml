@@ -76,12 +76,12 @@ flutter:
 
   assets:
   - assets/images/
-  - assets/images/banner1.jpg
-  - assets/images/banner2.jpg
-  - assets/images/banner5.jpg
-  - assets/images/default_images.jpg
-  - assets\images\imagee.png
-  - assets\images\image.png
+  # - assets/images/banner1.jpg
+  # - assets/images/banner2.jpg
+  # - assets/images/banner5.jpg
+  # - assets/images/default_images.jpg
+  # - assets\images\imagee.png
+  # - assets\images\image.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
