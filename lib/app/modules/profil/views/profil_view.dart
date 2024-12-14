@@ -52,7 +52,8 @@ class ProfilView extends StatelessWidget {
                           return controller.profileImageUrl.value.isNotEmpty
                               ? CircleAvatar(
                                   radius: 60,
-                                  backgroundImage: NetworkImage(controller.profileImageUrl.value),
+                                  backgroundImage: NetworkImage(
+                                      controller.profileImageUrl.value),
                                 )
                               : const CircleAvatar(
                                   radius: 60,
@@ -285,7 +286,8 @@ class ProfilView extends StatelessWidget {
                                   child: ElevatedButton.icon(
                                     onPressed:
                                         controller.updateCoordinatesFromAddress,
-                                    icon: const Icon(Icons.edit_location_outlined,
+                                    icon: const Icon(
+                                        Icons.edit_location_outlined,
                                         color: Colors.white),
                                     label: const Text(
                                       'Perbarui Alamat',
