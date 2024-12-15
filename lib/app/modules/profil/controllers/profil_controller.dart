@@ -1,332 +1,518 @@
 import 'dart:io';
-
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfilController extends GetxController {
-  // var latitude = Rx<double?>(null);
-  // var longitude = Rx<double?>(null);
-  // var alamat = RxString('');
-  // var isLoading = false.obs;
-
-  // var nama = ''.obs;
-  // var nohp = ''.obs;
-  // var distance = RxDouble(0.0); // Jarak ke toko
-  // var shippingCost = RxInt(0); // Biaya ongkir
   final RxString profileImageUrl = ''.obs;
-  var isLoading = true.obs;
-  var nama = ''.obs;
-  var nohp = ''.obs;
-  var alamat = ''.obs;
-  var ongkir = 0.0.obs;
-  var distance = 0.0.obs;
-  var inputAddress = ''.obs;
-  var latitude = 0.0.obs;
-  var longitude = 0.0.obs;
-
-  // Variabel untuk input manual
-  // var inputAddress = RxString('');
+  final RxBool isLoading = false.obs;
+  final RxString nama = ''.obs;
+  final RxString nohp = ''.obs;
+  final RxString alamat = ''.obs;
+  final RxDouble ongkir = 0.0.obs;
+  final RxDouble distance = 0.0.obs;
+  final RxString inputAddress = ''.obs;
+  final RxDouble latitude = 0.0.obs;
+  final RxDouble longitude = 0.0.obs;
 
   // Koordinat toko
-  final double storeLatitude = -0.9292; // Contoh latitude toko
-  final double storeLongitude = 119.8583; // Contoh longitude toko
+  static const double storeLatitude = -0.9292;
+  static const double storeLongitude = 119.8583;
+
+  var isRefreshingLocation = false.obs;
+
+  // untuk refresh lokasi
+  Future<void> refreshUserLocation() async {
+    try {
+      // Set status loading
+      isRefreshingLocation.value = true;
+
+      // Cek apakah alamat tersedia
+      if (alamat.value.isEmpty) {
+        Get.snackbar(
+          'Error',
+          'Alamat belum tersedia',
+          margin: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFFFF5252),
+        );
+        return;
+      }
+
+      // Update koordinat dari alamat
+      await updateCoordinatesFromAddress();
+
+      // Hitung ulang jarak dan biaya
+      calculateDistanceAndCost();
+
+      // Simpan perubahan ke Firebase
+      await saveNewAddress();
+
+      Get.closeAllSnackbars(); // Tutup semua snackbar sebelumnya
+      Get.snackbar(
+        'Pembaruan Berhasil',
+        'Jarak dan ongkir telah diperbarui',
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFF0288D1),
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e) {
+      Get.closeAllSnackbars();
+      Get.snackbar(
+        'Error',
+        'Gagal memperbarui lokasi: $e',
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
+      );
+    } finally {
+      // Reset status loading
+      isRefreshingLocation.value = false;
+    }
+  }
 
   @override
   void onInit() {
     super.onInit();
-    fetchUserData();
-    getGeolocation();
-    loadUserProfile();
+    _initializeData();
   }
 
-  void loadUserProfile() async {
-    isLoading(true);
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        DocumentSnapshot snapshot = await FirebaseFirestore.instance
-            .collection('customer')
-            .doc(user.uid)
-            .get();
+  Future<void> _initializeData() async {
+    await Future.wait([
+      loadUserProfile(),
+      _checkAndRequestLocationPermission(),
+    ] as Iterable<Future>);
+  }
 
-        if (snapshot.exists) {
-          nama.value = snapshot['nama'] ?? '';
-          nohp.value = snapshot['nohp'] ?? '';
-          alamat.value = snapshot['alamat'] ?? '';
-          ongkir.value = snapshot['ongkir'] ?? 0.0;
-          profileImageUrl.value = snapshot['profileImageUrl'] ?? '';
-          // Anda bisa mengupdate jarak dan ongkir sesuai kebutuhan
-        }
+  Future<void> _checkAndRequestLocationPermission() async {
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
       }
     } catch (e) {
-      print('Error loading user profile: $e');
-    } finally {
-      isLoading(false);
+      print('Permission check error: $e');
     }
   }
 
-
-  Future<void> editProfilePhoto() async {
-  try {
-    final ImagePicker _picker = ImagePicker();
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
+  Future<void> loadUserProfile() async {
+    try {
       isLoading.value = true;
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        throw Exception('Pengguna tidak terautentikasi');
+      }
+
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection('customer')
+          .doc(user.uid)
+          .get();
+
+      if (snapshot.exists) {
+        nama.value = snapshot['username']?.toString() ?? '';
+        nohp.value = snapshot['nohp']?.toString() ?? '';
+        alamat.value = snapshot['alamat']?.toString() ?? '';
+
+        ongkir.value = _safeParseDouble(snapshot['ongkir']) ?? 0.0;
+        profileImageUrl.value = snapshot['profileImageUrl']?.toString() ?? '';
+
+        // Hitung ulang jarak jika alamat tersedia
+        if (alamat.value.isNotEmpty) {
+          await updateCoordinatesFromAddress();
+        }
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Gagal memuat profil: $e',
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> updateCoordinatesFromAddress() async {
+    try {
+      if (alamat.value.isEmpty) {
+        throw Exception('Alamat kosong');
+      }
+
+      List<Location> locations = await locationFromAddress(alamat.value);
+      if (locations.isNotEmpty) {
+        final location = locations.first;
+        latitude.value = location.latitude;
+        longitude.value = location.longitude;
+        calculateDistanceAndCost();
+      } else {
+        throw Exception('Tidak dapat menemukan koordinat');
+      }
+    } catch (e) {
+      print('Error updating coordinates from address: $e');
+
+      // Reset koordinat
+      latitude.value = 0.0;
+      longitude.value = 0.0;
+      distance.value = 0.0;
+      ongkir.value = 0.0;
+    }
+  }
+
+  void calculateDistanceAndCost() {
+    try {
+      double dist = Geolocator.distanceBetween(
+            latitude.value,
+            longitude.value,
+            storeLatitude,
+            storeLongitude,
+          ) /
+          1000; // Konversi ke kilometer
+
+      distance.value = dist;
+
+      // Menghitung biaya ongkir
+      ongkir.value = _calculateShippingCost(dist);
+    } catch (e) {
+      print('Error calculating distance and cost: $e');
+      distance.value = 0.0;
+      ongkir.value = 0.0;
+    }
+  }
+
+  double _calculateShippingCost(double distance) {
+    if (distance <= 1) return 0;
+    if (distance <= 2) return 1000;
+    if (distance <= 3) return 2000;
+    return ((distance - 3).ceil() * 1000) + 2000;
+  }
+
+  //pilih lokasi saat ini
+  Future<void> getGeolocation() async {
+    try {
+      // Izin lokasi
+      LocationPermission permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw Exception('Izin lokasi ditolak');
+      }
+
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      latitude.value = position.latitude;
+      longitude.value = position.longitude;
+
+      // Dapatkan alamat dari koordinat
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        alamat.value = _formatAddress(place);
+        calculateDistanceAndCost();
+      }
+      Get.snackbar(
+        'Berhasil mendapatkan lokasi',
+        'Jangan lupa simpan alamat barumu!',
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFF0288D1),
+        duration: const Duration(seconds: 4),
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Gagal mendapatkan lokasi: $e',
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  String _formatAddress(Placemark place) {
+    return [
+      place.street ?? '',
+      place.subLocality ?? '',
+      place.locality ?? '',
+      place.administrativeArea ?? '',
+      place.country ?? ''
+    ].where((part) => part.isNotEmpty).join(', ');
+  }
+
+  Future<void> saveNewAddress() async {
+    try {
+      // Validasi alamat
+      if (alamat.value.isEmpty) {
+        Get.snackbar(
+          'Error',
+          'Alamat tidak boleh kosong',
+          margin: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFFFF5252),
+        );
+        return;
+      }
 
       User? currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
         throw Exception('Pengguna tidak terautentikasi');
       }
 
-      String filePath = 'profile_pictures/${currentUser.uid}.jpg';
-
-      File imageFile = File(pickedFile.path);
-
-      UploadTask uploadTask = FirebaseStorage.instance.ref(filePath).putFile(imageFile);
-      TaskSnapshot snapshot = await uploadTask;
-
-      String downloadUrl = await snapshot.ref.getDownloadURL();
-
-      DocumentReference customerDocRef = FirebaseFirestore.instance.collection('customer').doc(currentUser.uid);
-      await customerDocRef.update({
-        'profileImageUrl': downloadUrl,
+      isLoading.value = true;
+      Map<String, dynamic> updateData = {
+        'alamat': alamat.value,
+        'jarak': distance.value,
+        'ongkir': ongkir.value,
+        'latitude': latitude.value,
+        'longitude': longitude.value,
         'updatedAt': FieldValue.serverTimestamp(),
-      });
-      profileImageUrl.value = downloadUrl;
+      };
+
+      // Update dokumen
+      await FirebaseFirestore.instance
+          .collection('customer')
+          .doc(currentUser.uid)
+          .update(updateData);
 
       Get.snackbar(
-        'Sukses',
-        'Foto profil berhasil diperbarui.',
-        snackPosition: SnackPosition.BOTTOM,
+        'Alamat berhasil disimpan',
+        'Refresh terlebih dahulu!',
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFF0288D1),
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Gagal menyimpan alamat: $e',
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  double? _safeParseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) {
+      return double.tryParse(value);
+    }
+    return null;
+  }
+
+  // Method untuk edit foto profil
+  Future<void> editProfilePhoto() async {
+    try {
+      // Tampilkan bottom sheet loading
+      Get.bottomSheet(
+        Container(
+            height: 120,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                CircularProgressIndicator(),
+                Text("Mengunggah Foto"),
+              ],
+            )),
+        isDismissible: false,
       );
 
-    } else {
-      Get.snackbar('Info', 'Tidak ada gambar yang dipilih.');
-    }
-  } catch (e) {
-    Get.snackbar('Error', 'Gagal memperbarui foto profil: $e');
-  } finally {
-    isLoading.value = false;
-  }
-  }
+      final ImagePicker picker = ImagePicker();
+      final XFile? pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1000,
+        maxHeight: 1000,
+        imageQuality: 80,
+      );
 
-
-  Future<void> fetchUserData() async {
-    try {
-      isLoading.value = true;
-
-      // Mendapatkan email pengguna
-      String? email = FirebaseAuth.instance.currentUser?.email;
-      if (email == null) {
-        throw Exception('User not logged in');
-      }
-
-      // Ambil data pengguna dari Firestore
-      var doc = await FirebaseFirestore.instance
-          .collection('customer')
-          .where('email', isEqualTo: email)
-          .get();
-
-      if (doc.docs.isNotEmpty) {
-        var userData = doc.docs.first.data();
-        nama.value = userData['username'] ?? 'N/A';
-        nohp.value = userData['nohp'] ?? 'N/A';
-        alamat.value = userData['alamat'] ?? '';
-        ongkir.value = userData['ongkir'] ?? 0;
-        profileImageUrl.value = userData['profileImageUrl'] ?? '';
-      } else {
-        throw Exception('User data not found');
-      }
-    } catch (e) {
-      print('Error fetching user data: $e');
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  Future<void> getGeolocation() async {
-    try {
-      isLoading.value = true;
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          throw Exception('Location permission denied');
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        throw Exception('Location permission permanently denied');
-      }
-
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-      latitude.value = position.latitude;
-      longitude.value = position.longitude;
-
-      // Hitung jarak ke toko
-      calculateDistanceAndCost();
-
-      // Dapatkan alamat menggunakan geocoding
-      updateAddressFromCoordinates(position.latitude, position.longitude);
-    } catch (e) {
-      print('Error getting location: $e');
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  void updateAddressFromCoordinates(double lat, double lng) async {
-    try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks[0];
-        alamat.value =
-            "${place.street}, ${place.subLocality}, ${place.locality}, ${place.country}";
-        calculateDistanceAndCost();
-      }
-    } catch (e) {
-      print('Error updating address from coordinates: $e');
-    }
-  }
-
-  void updateCoordinatesFromAddress() async {
-    if (inputAddress.value.isNotEmpty) {
-      try {
+      if (pickedFile != null) {
         isLoading.value = true;
-        List<Location> locations =
-            await locationFromAddress(inputAddress.value);
+        User? currentUser = FirebaseAuth.instance.currentUser;
+        if (currentUser == null) {
+          throw Exception('Pengguna tidak terautentikasi');
+        }
+
+        //path untuk foto profil
+        String filePath =
+            'profile_pictures/${currentUser.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+        // Upload file
+        File imageFile = File(pickedFile.path);
+        UploadTask uploadTask =
+            FirebaseStorage.instance.ref(filePath).putFile(imageFile);
+
+        // Dapatkan URL download
+        TaskSnapshot snapshot = await uploadTask;
+        String downloadUrl = await snapshot.ref.getDownloadURL();
+
+        // Update di Firestore
+        await FirebaseFirestore.instance
+            .collection('customer')
+            .doc(currentUser.uid)
+            .update({
+          'profileImageUrl': downloadUrl,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+
+        // Update local state
+        profileImageUrl.value = downloadUrl;
+        // Tutup bottom sheet loading
+        Get.back();
+
+        Get.snackbar(
+          'Sukses',
+          'Foto profil berhasil diperbarui',
+          margin: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFF0288D1),
+        );
+      } else {
+        // Jika tidak memilih foto, tutup bottom sheet
+        Get.back();
+      }
+    } catch (e) {
+      Get.back();
+      Get.snackbar(
+        'Error',
+        'Gagal memperbarui foto profil: $e',
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Method untuk update profil
+  Future<void> updateProfile({
+    String? newName,
+    String? newPhone,
+  }) async {
+    try {
+      isLoading.value = true;
+
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        throw Exception('Pengguna tidak terautentikasi');
+      }
+      Map<String, dynamic> updateData = {};
+      if (newName != null && newName.isNotEmpty) {
+        updateData['username'] = newName;
+        nama.value = newName;
+      }
+      if (newPhone != null && newPhone.isNotEmpty) {
+        updateData['nohp'] = newPhone;
+        nohp.value = newPhone;
+      }
+      // update jika ada perubahan
+      if (updateData.isNotEmpty) {
+        updateData['updatedAt'] = FieldValue.serverTimestamp();
+
+        await FirebaseFirestore.instance
+            .collection('customer')
+            .doc(currentUser.uid)
+            .update(updateData);
+
+        Get.snackbar(
+          'Sukses',
+          'Profil berhasil diperbarui',
+          margin: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFF0288D1),
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Gagal memperbarui profil: $e',
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Method untuk update alamat manual
+  Future<void> updateAddressManually(String newAddress) async {
+    try {
+      // Validasi alamat tidak kosong
+      if (newAddress.trim().isEmpty) {
+        Get.snackbar(
+          'Error',
+          'Alamat tidak boleh kosong',
+          margin: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFFFF5252),
+        );
+        return;
+      }
+
+      try {
+        // Konversi alamat ke koordinat
+        List<Location> locations = await locationFromAddress(newAddress);
+
         if (locations.isNotEmpty) {
-          final location = locations.first;
+          Location location = locations.first;
+
+          // Update values
+          alamat.value = newAddress;
           latitude.value = location.latitude;
           longitude.value = location.longitude;
 
-          updateAddressFromCoordinates(latitude.value!, longitude.value!);
-        }
-      } catch (e) {
-        print('Error getting coordinates from address: $e');
-      } finally {
-        isLoading.value = false;
+          // Hitung jarak dan ongkir
+          calculateDistanceAndCost();
+
+          // Simpan ke Firebase
+          await saveNewAddress();
+        } else {}
+      } catch (geocodingError) {
+        Get.snackbar(
+          'Error',
+          'Gagal mengkonversi alamat: $geocodingError',
+          margin: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFFFF5252),
+        );
       }
-    } else {
-      Get.snackbar('Error', 'Alamat tidak boleh kosong');
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Gagal memproses alamat: $e',
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
+      );
+    } finally {
+      isLoading.value = false;
     }
   }
-
-  void calculateDistanceAndCost() {
-    if (latitude.value != null && longitude.value != null) {
-      double dist = Geolocator.distanceBetween(
-            latitude.value!,
-            longitude.value!,
-            storeLatitude,
-            storeLongitude,
-          ) /
-          1000; // Konversi ke kilometer
-      distance.value = dist;
-
-      // Hitung biaya ongkir
-      if (dist <= 1) {
-        ongkir.value = 0;
-      }
-      else if (dist <= 2) {
-        ongkir.value = 1000;
-      } else if (dist <= 3) {
-        ongkir.value = 2000;
-      } else {
-        ongkir.value = ((dist - 3).ceil() * 1000) + 2000;
-      }
-    }
-  }
-
-  Future<void> openGoogleMaps() async {
-  try {
-    final double lat = latitude.value;
-    final double lng = longitude.value;
-
-    // Periksa apakah koordinat tersedia
-    if (lat == 0.0 && lng == 0.0) {
-      Get.snackbar('Error', 'Koordinat tidak tersedia.');
-      return;
-    }
-
-    // Format URL untuk Google Maps
-    final Uri googleMapsUrl = Uri.parse(
-      'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
-    );
-
-    // Periksa apakah URL bisa dibuka
-    if (await canLaunchUrl(googleMapsUrl)) {
-      // Buka URL menggunakan aplikasi eksternal
-      await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
-    } else {
-      Get.snackbar('Error', 'Tidak dapat membuka Google Maps.');
-    }
-  } catch (e) {
-    // Tangani error jika ada
-    Get.snackbar('Error', 'Terjadi kesalahan: $e');
-  }
-}
-
-  Future<void> updateAddressAndShippingCost() async {
-  try {
-
-    // Validasi input
-    if (alamat.value.isEmpty) {
-      Get.snackbar('Error', 'Alamat tidak boleh kosong');
-      return;
-    }
-
-    // Dapatkan user saat ini
-    User? currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser == null) {
-      throw Exception('Pengguna tidak terautentikasi');
-    }
-
-    // Referensi dokumen pelanggan
-    DocumentReference customerDocRef = FirebaseFirestore.instance
-        .collection('customer')
-        .doc(currentUser.uid);
-
-    // Siapkan data update
-    Map<String, dynamic> updateData = {
-      'uid': currentUser.uid,
-      'alamat': alamat.value,
-      'ongkir': ongkir.value,
-      'updatedAt': FieldValue.serverTimestamp(),
-    };
-    // Lakukan update atau set dengan merge
-    await customerDocRef.set(updateData, SetOptions(merge: true));
-
-    // Tampilkan pesan sukses
-    Get.snackbar(
-      'Sukses', 
-      'Alamat dan ongkos kirim berhasil diperbarui',
-    );
-
-    // Refresh data setelah update
-    loadUserProfile();
-
-  } on FirebaseException catch (firebaseError) {
-
-    Get.snackbar(
-      'Error Firebase', 
-      firebaseError.message ?? 'Terjadi kesalahan pada Firebase',
-    );
-
-  } catch (e) {
-
-    Get.snackbar(
-      'Error', 
-      'Gagal menyimpan alamat dan ongkir: $e',
-    );
-  }
-}
 }

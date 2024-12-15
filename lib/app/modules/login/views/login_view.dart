@@ -76,7 +76,7 @@ class LoginView extends GetView<LoginController> {
               ),
               // Container bawah untuk form login
               Container(
-                height: 405.h, // Responsif untuk tinggi
+                height: 400.h, // Responsif untuk tinggi
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
@@ -103,15 +103,8 @@ class LoginView extends GetView<LoginController> {
                         'Masuk dengan akun Anda!',
                         style: TextStyle(
                           fontSize: 18,
-                          color: Color(0xFF0277BD),
                           fontWeight: FontWeight.bold,
-                          shadows: [
-                            Shadow(
-                              offset: Offset(1.5, 1.5),
-                              color: Colors.black12,
-                              blurRadius: 3,
-                            ),
-                          ],
+                          color: Color(0xFF0288D1),
                         ),
                       ),
                     ),
@@ -234,8 +227,8 @@ class LoginView extends GetView<LoginController> {
                           'Lupa Password?',
                           style: TextStyle(
                             fontSize: 16,
-                            color: Color(0xFF40C4FF),
-                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF0288D1),
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
@@ -258,8 +251,8 @@ class LoginView extends GetView<LoginController> {
                             'Daftar',
                             style: TextStyle(
                               fontSize: 16,
-                              color: Color(0xFF40C4FF),
-                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF0288D1),
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),

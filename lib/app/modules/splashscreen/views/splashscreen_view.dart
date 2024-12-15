@@ -33,23 +33,20 @@ class SplashscreenView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Spacer(flex: 2),
-              // Centered CircleAvatar
               Center(
                 child: CircleAvatar(
                   radius: 110,
-                  backgroundImage: AssetImage('assets/images/logo.png'),
+                  backgroundImage: AssetImage('assets/images/logo.jpeg'),
                 ),
               ),
               SizedBox(height: 30),
-              // Centered Progress Indicator
+              // Progress Indicator
               Center(
                 child: CircularProgressIndicator.adaptive(
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ),
-              // Expanded to push content to the bottom
               Spacer(flex: 2),
-              // Centered Text
               Padding(
                 padding: EdgeInsets.only(bottom: 20.0),
                 child: Text(

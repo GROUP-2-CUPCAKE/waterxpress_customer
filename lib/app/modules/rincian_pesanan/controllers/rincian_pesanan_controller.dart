@@ -6,25 +6,24 @@ import '/app/data/Pesanan.dart';
 class RincianPesananController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Observable untuk detail pesanan
+  //detail pesanan
   Rx<Pesanan?> pesanan = Rx<Pesanan?>(null);
   RxBool isLoading = false.obs;
   RxString errorMessage = RxString('');
 
-  // Observable untuk detail pembayaran
+  // detail pembayaran
   RxString alamat = RxString('');
   RxDouble ongkir = RxDouble(0.0);
   RxDouble subtotalProduk = RxDouble(0.0);
   RxDouble total = RxDouble(0.0);
 
-  // Observable untuk daftar produk
+  //daftar produk
   RxList<dynamic> produkList = RxList<dynamic>([]);
 
   @override
   void onInit() {
     super.onInit();
-    
-    // Gunakan WidgetsBinding untuk menunda eksekusi
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final pesananId = Get.arguments?['id'] as String?;
       if (pesananId != null && pesananId.isNotEmpty) {
@@ -35,24 +34,18 @@ class RincianPesananController extends GetxController {
 
   Future<void> fetchPesananDetail(String pesananId) async {
     try {
-      // Reset state sebelum memuat
       _resetState();
-      
+
       isLoading.value = true;
       errorMessage.value = '';
 
       // Ambil dokumen pesanan
-      final doc = await _firestore
-          .collection('Pesanan')
-          .doc(pesananId)
-          .get();
+      final doc = await _firestore.collection('Pesanan').doc(pesananId).get();
 
       if (doc.exists) {
         // Convert data ke model Pesanan
-        final fetchedPesanan = Pesanan.fromJson({
-          'id': doc.id,
-          ...doc.data() as Map<String, dynamic>
-        });
+        final fetchedPesanan = Pesanan.fromJson(
+            {'id': doc.id, ...doc.data() as Map<String, dynamic>});
 
         // Update state
         _updatePesananState(fetchedPesanan);
@@ -75,36 +68,30 @@ class RincianPesananController extends GetxController {
     produkList.value = fetchedPesanan.produk ?? [];
   }
 
-  // Metode untuk menghitung subtotal produk
+  // untuk menghitung subtotal produk
   double _calculateSubtotal(List<dynamic>? produkList) {
     if (produkList == null || produkList.isEmpty) return 0.0;
 
     return produkList.fold(0.0, (total, produk) {
       double harga = (produk['harga'] ?? 0.0).toDouble();
-      int jumlah = (produk['jumlah'] ?? 1);
-      return total + (harga * jumlah);
+      int kuantitas = (produk['kuantitas'] ?? 1);
+      return total + (harga * kuantitas);
     });
   }
 
-  // Metode untuk membatalkan pesanan
+  // untuk membatalkan pesanan
   Future<void> batalkanPesanan() async {
     if (pesanan.value == null) {
       _handleError('Tidak ada pesanan yang dapat dibatalkan');
       return;
     }
-
     try {
       await _firestore.collection('Pesanan').doc(pesanan.value!.id).update({
         'status': 'Dibatalkan',
         'tanggalPembatalan': FieldValue.serverTimestamp()
       });
-
-      // Update status lokal
       pesanan.value?.status = 'Dibatalkan';
-
       _showSuccessSnackbar('Pesanan berhasil dibatalkan');
-      
-      // Kembali ke halaman sebelumnya
       Get.back();
     } catch (e) {
       _handleError('Gagal membatalkan pesanan: ${e.toString()}');
@@ -122,26 +109,26 @@ class RincianPesananController extends GetxController {
     errorMessage.value = '';
   }
 
-  // Metode bantuan untuk menampilkan error
+  //untuk menampilkan error
   void _handleError(String message) {
     errorMessage.value = message;
     Get.snackbar(
       'Error',
       message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
+      margin: const EdgeInsets.all(12),
+      backgroundColor: Colors.white,
+      colorText: const Color(0xFFFF5252),
     );
   }
 
-  // Metode bantuan untuk menampilkan pesan sukses
+  //untuk menampilkan pesan sukses
   void _showSuccessSnackbar(String message) {
     Get.snackbar(
       'Berhasil',
       message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
+      margin: const EdgeInsets.all(12),
+      backgroundColor: Colors.white,
+      colorText: const Color(0xFF0288D1),
     );
   }
 }

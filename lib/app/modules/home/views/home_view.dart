@@ -37,9 +37,9 @@ class _HomeViewState extends State<HomeView> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF40C4FF), Color(0xFF0288D1)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            colors: [Color(0xFF0288D1), Color(0xFF40C4FF)],
+            begin: Alignment.centerRight,
+            end: Alignment.centerLeft,
           ),
         ),
         child: SafeArea(
@@ -204,22 +204,47 @@ class _HomeViewState extends State<HomeView> {
                                         ),
                                       ),
                                       ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.transparent,
+                                          shadowColor: Colors.transparent,
+                                          padding: EdgeInsets.zero,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(15),
+                                          ),
+                                        ),
                                         onPressed: () {
                                           // Panggil method logout dari HomeController
                                           final HomeController controller =
                                               Get.find<HomeController>();
                                           controller.logout();
-                                          // Tutup dialog
-                                          Navigator.pop(context);
+                                          Navigator.pop(
+                                              context); // Tutup dialog
                                         },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              const Color(0xFF0288D1)
-                                                  .withOpacity(0.9),
-                                        ),
-                                        child: const Text(
-                                          'Logout',
-                                          style: TextStyle(color: Colors.white),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            gradient: const LinearGradient(
+                                              colors: [
+                                                Color(0xFF40C4FF),
+                                                Color(0xFF0288D1)
+                                              ],
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(15),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 24,
+                                            vertical: 12,
+                                          ),
+                                          child: const Text(
+                                            'Logout',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -250,7 +275,6 @@ class _HomeViewState extends State<HomeView> {
                           'Pesan Air di WaterXpress',
                           style: TextStyle(
                             fontSize: 18,
-                            // fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
@@ -353,16 +377,16 @@ class _ImageCarouselState extends State<ImageCarousel> {
             itemCount: 4, // Jumlah gambar
             itemBuilder: (context, index) {
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 7),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(15),
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
                       // Gambar dengan filter
                       ColorFiltered(
                         colorFilter: ColorFilter.mode(
-                          Colors.white.withOpacity(0.3),
+                          Colors.white.withOpacity(0.6),
                           BlendMode.lighten,
                         ),
                         child: Image.asset(
@@ -378,7 +402,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                           width: double.infinity,
                           height: double.infinity,
                           fit: BoxFit.cover,
-                          color: Colors.black.withOpacity(0.3),
+                          color: Colors.black.withOpacity(0.1),
                           colorBlendMode: BlendMode.darken,
                         ),
                       ),
@@ -391,7 +415,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black.withOpacity(0.6),
+                              Colors.black.withOpacity(0.5),
                             ],
                           ),
                         ),
@@ -518,12 +542,12 @@ class HomeContent extends StatelessWidget {
     const bottomNavHeight = 1.0;
 
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 0.0),
+            padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 0.0),
             child: Text(
               'Produk yang Tersedia',
               style: TextStyle(
@@ -579,6 +603,7 @@ class HomeContent extends StatelessWidget {
                   );
                 }
 
+                //produk kosong
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return Center(
                     child: Column(
@@ -621,7 +646,7 @@ class HomeContent extends StatelessWidget {
                     var produk = snapshot.data![index];
                     //tampilan card
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6.0),
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(15),
@@ -647,190 +672,175 @@ class HomeContent extends StatelessWidget {
                           color: Colors.transparent,
                           margin: EdgeInsets.zero,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(15),
                             side: BorderSide(
                               color: const Color(0xFF0288D1).withOpacity(0.5),
                               width: 0.5,
                             ),
                           ),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: const Border(
-                                bottom: BorderSide(
-                                  color: Color(0xFF0288D1),
-                                  width: 2,
-                                  style: BorderStyle.solid,
-                                ),
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Gambar Produk
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: CachedNetworkImage(
-                                        imageUrl: produk.images,
-                                        width: 70,
-                                        height: 110,
-                                        fit: BoxFit.cover,
-                                        errorWidget: (context, url, error) =>
-                                            Container(
-                                          color: Colors.grey[200],
-                                          child: const Icon(Icons.error,
-                                              color: Colors.red),
-                                        ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Gambar Produk
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: CachedNetworkImage(
+                                      imageUrl: produk.images,
+                                      width: 70,
+                                      height: 120,
+                                      fit: BoxFit.cover,
+                                      errorWidget: (context, url, error) =>
+                                          Container(
+                                        color: Colors.grey[200],
+                                        child: const Icon(Icons.error,
+                                            color: Colors.red),
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 15),
-                                  // Informasi Produk
-                                  Expanded(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          produk.nama,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black87,
-                                            fontSize: 16,
-                                            letterSpacing: 0.5,
-                                          ),
+                                ),
+                                const SizedBox(width: 15),
+                                // Informasi Produk
+                                Expanded(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        produk.nama,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87,
+                                          fontSize: 16,
+                                          letterSpacing: 0.5,
                                         ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Rp${produk.harga},00',
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w900,
-                                            color: Colors.black54,
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Rp${produk.harga},00',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w900,
+                                          color: Colors.black54,
                                         ),
-                                        const SizedBox(height: 6),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.fact_check,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.fact_check,
+                                            color: produk.stok > 0
+                                                // ? const Colors.grey
+                                                ? const Color.fromARGB(
+                                                    255, 83, 89, 93)
+                                                : const Color(
+                                                    0xFFD32F2F), // Merah untuk stok habis
+                                            size: 14,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Stok: ${produk.stok}',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w200,
                                               color: produk.stok > 0
-                                                  // ? const Colors.grey
                                                   ? const Color.fromARGB(
                                                       255, 83, 89, 93)
                                                   : const Color(
                                                       0xFFD32F2F), // Merah untuk stok habis
-                                              size: 14,
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              'Stok: ${produk.stok}',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w200,
-                                                color: produk.stok > 0
-                                                    ? const Color.fromARGB(
-                                                        255, 83, 89, 93)
-                                                    : const Color(
-                                                        0xFFD32F2F), // Merah untuk stok habis
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
-                                        ElevatedButton(
-                                          onPressed: produk.stok > 0
-                                              ? () {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          DetailPesananView(
-                                                        productId: produk.id,
-                                                      ),
-                                                    ),
-                                                  );
-                                                }
-                                              : null,
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors
-                                                .transparent, // Jadikan transparan
-                                            shadowColor: Colors
-                                                .transparent, // Hapus shadow
-                                            padding: EdgeInsets
-                                                .zero, // Hapus padding bawaan
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
                                             ),
                                           ),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              gradient: produk.stok > 0
-                                                  ? const LinearGradient(
-                                                      colors: [
-                                                        Color(0xFF40C4FF),
-                                                        Color(0xFF0288D1)
-                                                      ],
-                                                      begin: Alignment.topLeft,
-                                                      end:
-                                                          Alignment.bottomRight,
-                                                    )
-                                                  : LinearGradient(
-                                                      colors: [
-                                                        Colors.grey.shade300,
-                                                        Colors.grey.shade300
-                                                      ],
-                                                      begin: Alignment.topLeft,
-                                                      end:
-                                                          Alignment.bottomRight,
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      ElevatedButton(
+                                        onPressed: produk.stok > 0
+                                            ? () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        DetailPesananView(
+                                                      productId: produk.id,
                                                     ),
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16, vertical: 8),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  Icons.shopping_cart,
+                                                  ),
+                                                );
+                                              }
+                                            : null,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors
+                                              .transparent, // Jadikan transparan
+                                          shadowColor: Colors
+                                              .transparent, // Hapus shadow
+                                          padding: EdgeInsets
+                                              .zero, // Hapus padding bawaan
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(15),
+                                          ),
+                                        ),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            gradient: produk.stok > 0
+                                                ? const LinearGradient(
+                                                    colors: [
+                                                      Color(0xFF40C4FF),
+                                                      Color(0xFF0288D1)
+                                                    ],
+                                                    begin: Alignment.topLeft,
+                                                    end: Alignment.bottomRight,
+                                                  )
+                                                : LinearGradient(
+                                                    colors: [
+                                                      Colors.grey.shade300,
+                                                      Colors.grey.shade300
+                                                    ],
+                                                    begin: Alignment.topLeft,
+                                                    end: Alignment.bottomRight,
+                                                  ),
+                                            borderRadius:
+                                                BorderRadius.circular(15),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 8),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.shopping_cart,
+                                                color: produk.stok > 0
+                                                    ? Colors.white
+                                                    : Colors.grey.shade600,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                produk.stok > 0
+                                                    ? 'Pesan Sekarang'
+                                                    : 'Stok Habis',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
                                                   color: produk.stok > 0
                                                       ? Colors.white
-                                                      : Colors.grey,
+                                                      : Colors.grey.shade600,
                                                 ),
-                                                const SizedBox(width: 8),
-                                                Text(
-                                                  produk.stok > 0
-                                                      ? 'Pesan Sekarang'
-                                                      : 'Stok Habis',
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: produk.stok > 0
-                                                        ? Colors.white
-                                                        : Colors.grey,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
+                                              ),
+                                            ],
                                           ),
-                                        )
-                                      ],
-                                    ),
+                                        ),
+                                      )
+                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
