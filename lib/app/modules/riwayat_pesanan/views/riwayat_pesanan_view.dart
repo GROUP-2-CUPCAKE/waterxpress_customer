@@ -2,28 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '/app/data/Pesanan.dart';
 import 'package:waterxpress_customer/app/modules/riwayat_pesanan/controllers/riwayat_pesanan_controller.dart';
-import '/app/routes/app_pages.dart'; // Pastikan import routes
+import '/app/routes/app_pages.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RiwayatPesananView extends StatelessWidget {
   RiwayatPesananView({Key? key}) : super(key: key);
-
-  // Inisialisasi controller
-  final RiwayatPesananController controller = Get.put(RiwayatPesananController());
+  final RiwayatPesananController controller =
+      Get.put(RiwayatPesananController());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Riwayat',
+          'Riwayat Pesanan',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
         ),
+        foregroundColor: Colors.white,
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -45,17 +45,18 @@ class RiwayatPesananView extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.only(bottom: 8),
               child: Text(
-                'Pesanan yang selesai',
+                'Pesanan yang sudah selesai',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: Color(0xFF0288D1),
                 ),
               ),
             ),
             Expanded(
               child: StreamBuilder<List<Pesanan>>(
-                stream: controller.getCurrentUserPesanan(includeStatuses: ['Selesai']),
+                stream: controller
+                    .getCurrentUserPesanan(includeStatuses: ['Selesai']),
                 builder: (context, snapshot) {
                   // Tampilkan loading indicator saat data sedang dimuat
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -64,12 +65,39 @@ class RiwayatPesananView extends StatelessWidget {
                     );
                   }
 
-                  // Tampilkan pesan jika tidak ada data
+                  //pesanan kosong
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        'Tidak ada pesanan',
-                        style: TextStyle(fontSize: 16),
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Gambar
+                          Image.asset(
+                            'assets/images/image.png',
+                            width: 200,
+                            height: 200,
+                            fit: BoxFit.contain,
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'Tidak ada riwayat pesanan',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black54,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            'Kamu belum memiliki riwayat apapun',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black45,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 30),
+                        ],
                       ),
                     );
                   }
@@ -110,7 +138,7 @@ class RiwayatPesananView extends StatelessWidget {
     return produkList[0]['nama'] ?? 'Produk Tidak Diketahui';
   }
 
-   // Metode untuk mendapatkan ngal
+  // Metode untuk mendapatkan ngal
   String _formatTanggal(Timestamp? tanggalPesanan) {
     if (tanggalPesanan == null) {
       return '-'; // atau pesan default lainnya
@@ -128,7 +156,6 @@ class RiwayatPesananView extends StatelessWidget {
     return produkList[0]['images'] ?? '';
   }
 
-
   Widget _buildPesananCard({
     required Pesanan pesanan,
     required String produk,
@@ -144,65 +171,100 @@ class RiwayatPesananView extends StatelessWidget {
         print('Pesanan ID: ${pesanan.id}');
         // Navigate to RincianPesanan with pesanan ID
         if (pesanan.id != null) {
-          Get.toNamed(
-            Routes.RINCIAN_PESANAN, 
-            arguments: {'pesananId': pesanan.id}
-          );
+          Get.toNamed(Routes.RINCIAN_PESANAN,
+              arguments: {'pesananId': pesanan.id});
         } else {
           Get.snackbar(
             'Error',
             'ID Pesanan tidak tersedia',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
+            margin: const EdgeInsets.all(12),
+            backgroundColor: Colors.white,
+            colorText: const Color(0xFFFF5252),
           );
         }
       },
-      child: Card(
-        elevation: 4,
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              Row(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6.0),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            gradient: LinearGradient(
+              colors: [
+                Colors.blue.withOpacity(0.1),
+                Colors.blue.withOpacity(0.02),
+              ],
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withOpacity(0.05),
+                spreadRadius: 1,
+                blurRadius: 3,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Card(
+            elevation: 0,
+            color: Colors.transparent,
+            margin: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+              side: BorderSide(
+                color: const Color(0xFF0288D1).withOpacity(0.5),
+                width: 0.5,
+              ),
+            ),
+            child: Container(
+              // Dekorasi border bawah
+              decoration: BoxDecoration(
+                border: const Border(
+                  bottom: BorderSide(
+                    color: Color(0xFF0288D1),
+                    width: 2,
+                    style: BorderStyle.solid,
+                  ),
+                ),
+                borderRadius: BorderRadius.circular(15),
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: images.isNotEmpty
-                        ? Image.network(
-                            images,
-                            width: 50,
-                            height: 70,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: images.isNotEmpty
+                            ? Image.network(
+                                images,
                                 width: 50,
+                                height: 80,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: 50,
+                                    height: 70,
+                                    color: Colors.grey[300],
+                                    child: const Icon(Icons.image,
+                                        color: Colors.grey),
+                                  );
+                                },
+                              )
+                            : Container(
+                                width: 60,
                                 height: 70,
                                 color: Colors.grey[300],
                                 child:
                                     const Icon(Icons.image, color: Colors.grey),
-                              );
-                            },
-                          )
-                        : Container(
-                            width: 60,
-                            height: 70,
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.image, color: Colors.grey),
-                          ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               produk,
@@ -212,70 +274,72 @@ class RiwayatPesananView extends StatelessWidget {
                                 color: Colors.black87,
                               ),
                             ),
-                            const SizedBox(width: 8), // Tambahkan jarak antar teks
+                            const SizedBox(height: 4),
                             Text(
-                              tanggalPesanan,
+                              subtitle,
                               style: const TextStyle(
-                                fontSize: 12,
+                                fontSize: 14,
                                 color: Colors.grey,
-                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              total,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.black54,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          subtitle,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          total,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Stack(
-                children: [
-                  // Jumlah produk di pojok kiri bawah
-                  if (jumlahProduk > 1)
-                    Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Text(
-                        '+${jumlahProduk - 1} produk lainnya',
+                      ),
+                      Text(
+                        pesanan.tanggalPesanan != null
+                            ? _formatTanggal(pesanan.tanggalPesanan!)
+                            : 'Tanggal tidak tersedia',
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.grey,
+                          color: Colors.black54,
+                          fontStyle: FontStyle.italic,
                         ),
                       ),
-                    ),
-
-                  // Status di pojok kanan bawah
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: Text(
-                      status,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: _getStatusColor(status),
-                        fontWeight: FontWeight.bold,
+                    ],
+                  ),
+                  Divider(
+                    thickness: 1,
+                    color: const Color(0xFF0288D1).withOpacity(0.3),
+                    height: 20,
+                  ),
+                  Stack(
+                    children: [
+                      if (jumlahProduk > 1)
+                        Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Text(
+                            '+${jumlahProduk - 1} produk lainnya',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: Text(
+                          status,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: _getStatusColor(status),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -300,4 +364,3 @@ extension StringExtension on String {
     return "${this[0].toUpperCase()}${substring(1).toLowerCase()}";
   }
 }
-                        

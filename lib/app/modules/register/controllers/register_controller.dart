@@ -17,7 +17,8 @@ class RegisterController extends GetxController {
   var obscureText = true.obs;
   var obscureText2 = true.obs;
 
-  final String defaultProfileImageUrl = 'https://firebasestorage.googleapis.com/v0/b/katalog-makanan-45b5c.appspot.com/o/Produk%2Fdata%2Fuser%2F0%2Fcom.example.waterxpress_admin%2Fcache%2F06a4c880-f4b3-40fa-93f6-8d2c4a9228ac%2F1000302020.jpg?alt=media&token=4ae0e9f1-3259-4aae-9113-60bd0fa28139';
+  final String defaultProfileImageUrl =
+      'https://firebasestorage.googleapis.com/v0/b/katalog-makanan-45b5c.appspot.com/o/Produk%2Fdata%2Fuser%2F0%2Fcom.example.waterxpress_admin%2Fcache%2F06a4c880-f4b3-40fa-93f6-8d2c4a9228ac%2F1000302020.jpg?alt=media&token=4ae0e9f1-3259-4aae-9113-60bd0fa28139';
 
   void togglePasswordView() {
     obscureText.value = !obscureText.value;
@@ -38,7 +39,8 @@ class RegisterController extends GetxController {
       Get.snackbar(
         'Error',
         'Kolom tidak boleh kosong',
-        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
         duration: const Duration(seconds: 2),
         margin: const EdgeInsets.all(12),
       );
@@ -47,7 +49,8 @@ class RegisterController extends GetxController {
       Get.snackbar(
         'Error',
         'Silahkan masukkan nama pengguna',
-        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
         duration: const Duration(seconds: 2),
         margin: const EdgeInsets.all(12),
       );
@@ -56,7 +59,8 @@ class RegisterController extends GetxController {
       Get.snackbar(
         'Error',
         'Silahkan masukkan nomor handphone',
-        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
         duration: const Duration(seconds: 2),
         margin: const EdgeInsets.all(12),
       );
@@ -65,7 +69,8 @@ class RegisterController extends GetxController {
       Get.snackbar(
         'Error',
         'Silahkan masukkan email',
-        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
         duration: const Duration(seconds: 2),
         margin: const EdgeInsets.all(12),
       );
@@ -74,7 +79,8 @@ class RegisterController extends GetxController {
       Get.snackbar(
         'Error',
         'Silahkan masukkan password',
-        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
         duration: const Duration(seconds: 2),
         margin: const EdgeInsets.all(12),
       );
@@ -83,7 +89,8 @@ class RegisterController extends GetxController {
       Get.snackbar(
         'Error',
         'Silahkan masukkan konfirmari ulang password',
-        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
         duration: const Duration(seconds: 2),
         margin: const EdgeInsets.all(12),
       );
@@ -95,7 +102,8 @@ class RegisterController extends GetxController {
       Get.snackbar(
         'Error',
         'Kata sandi tidak cocok',
-        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
         duration: const Duration(seconds: 2),
         margin: const EdgeInsets.all(12),
       );
@@ -118,9 +126,10 @@ class RegisterController extends GetxController {
 
       await userCredential.user!.sendEmailVerification();
       Get.snackbar(
-        'Success',
-        'Pendaftaran berhasil! Harap verifikasi email Anda!',
-        snackPosition: SnackPosition.BOTTOM,
+        'Sukses',
+        'Pendaftaran berhasil! Verifikasi email terlebih dahulu!',
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFF0288D1),
         duration: const Duration(seconds: 4),
         margin: const EdgeInsets.all(12),
       );
@@ -130,7 +139,8 @@ class RegisterController extends GetxController {
         Get.snackbar(
           'Error',
           'Kata sandi yang diberikan terlalu lemah.',
-          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFFFF5252),
           duration: const Duration(seconds: 4),
           margin: const EdgeInsets.all(12),
         );
@@ -138,9 +148,10 @@ class RegisterController extends GetxController {
         Get.snackbar(
           'Error',
           'Akun Email sudah terdaftar. Silahkan coba lagi!',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 4),
           margin: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFFFF5252),
+          duration: const Duration(seconds: 4),
         );
       }
     } catch (e) {

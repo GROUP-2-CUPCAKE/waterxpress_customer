@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import '../../login/views/login_view.dart';
 import '/app/modules/register/controllers/register_controller.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +33,7 @@ class RegisterView extends GetView<RegisterController> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Container(
-                        height: 400,
+                        height: 370,
                         padding: const EdgeInsets.only(top: 50),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -112,15 +111,8 @@ class RegisterView extends GetView<RegisterController> {
                                   'Daftar dengan akun baru disini!',
                                   style: TextStyle(
                                     fontSize: 18,
-                                    color: Color(0xFF0277BD),
                                     fontWeight: FontWeight.bold,
-                                    shadows: [
-                                      Shadow(
-                                        offset: Offset(1.5, 1.5),
-                                        color: Colors.black12,
-                                        blurRadius: 3,
-                                      ),
-                                    ],
+                                    color: Color(0xFF0288D1),
                                   ),
                                 ),
                               ),
@@ -201,71 +193,76 @@ class RegisterView extends GetView<RegisterController> {
                               ),
                               const SizedBox(height: 15),
                               Container(
-                                decoration: textFieldDecoration(),
-                                child: Obx(() => TextFormField(
-                                      controller: controller.passwordController,
-                                      obscureText: controller.obscureText.value,
-                                      decoration: InputDecoration(
-                                        hintText: "Password",
-                                        hintStyle: const TextStyle(
-                                          color: Color(0xFF37474F),
-                                          fontSize: 16,
-                                        ),
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(15),
-                                          borderSide: BorderSide.none,
-                                        ),
-                                        fillColor: Colors.transparent,
-                                        filled: true,
-                                        prefixIcon: const Icon(
-                                          Icons.key,
-                                          color: Color(0xFF0277BD),
-                                        ),
-                                        suffixIcon: IconButton(
-                                          icon: Icon(
-                                            controller.obscureText.value
-                                                ? Icons.visibility_off
-                                                : Icons.visibility,
+                                  decoration: textFieldDecoration(),
+                                  child: Obx(() => TextFormField(
+                                        controller:
+                                            controller.passwordController,
+                                        obscureText:
+                                            controller.obscureText.value,
+                                        decoration: InputDecoration(
+                                          hintText: "Password",
+                                          hintStyle: const TextStyle(
+                                            color: Color(0xFF37474F),
+                                            fontSize: 16,
                                           ),
-                                          onPressed: () =>
-                                              controller.togglePasswordView(),
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(15),
+                                            borderSide: BorderSide.none,
+                                          ),
+                                          fillColor: Colors.transparent,
+                                          filled: true,
+                                          prefixIcon: const Icon(
+                                            Icons.key,
+                                            color: Color(0xFF0277BD),
+                                          ),
+                                          suffixIcon: IconButton(
+                                            icon: Icon(
+                                              controller.obscureText.value
+                                                  ? Icons.visibility_off
+                                                  : Icons.visibility,
+                                            ),
+                                            onPressed: () =>
+                                                controller.togglePasswordView(),
+                                          ),
                                         ),
-                                      ),
-                                    ))),
+                                      ))),
                               const SizedBox(height: 15),
                               Container(
-                                decoration: textFieldDecoration(),
-                                child: Obx(() => TextFormField(
-                                      controller:
-                                          controller.confirmPasswordController,
-                                      obscureText: controller.obscureText.value,
-                                      decoration: InputDecoration(
-                                        hintText: "Confirm Password",
-                                        hintStyle: const TextStyle(
-                                          color: Color(0xFF37474F),
-                                          fontSize: 16,
-                                        ),
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(15),
-                                          borderSide: BorderSide.none,
-                                        ),
-                                        fillColor: Colors.transparent,
-                                        filled: true,
-                                        prefixIcon: const Icon(
-                                          Icons.key,
-                                          color: Color(0xFF0277BD),
-                                        ),
-                                        suffixIcon: IconButton(
-                                          icon: Icon(
-                                            controller.obscureText2.value
-                                                ? Icons.visibility_off
-                                                : Icons.visibility,
+                                  decoration: textFieldDecoration(),
+                                  child: Obx(() => TextFormField(
+                                        controller: controller
+                                            .confirmPasswordController,
+                                        obscureText:
+                                            controller.obscureText.value,
+                                        decoration: InputDecoration(
+                                          hintText: "Confirm Password",
+                                          hintStyle: const TextStyle(
+                                            color: Color(0xFF37474F),
+                                            fontSize: 16,
                                           ),
-                                          onPressed: () =>
-                                              controller.togglePasswordView2(),
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(15),
+                                            borderSide: BorderSide.none,
+                                          ),
+                                          fillColor: Colors.transparent,
+                                          filled: true,
+                                          prefixIcon: const Icon(
+                                            Icons.key,
+                                            color: Color(0xFF0277BD),
+                                          ),
+                                          suffixIcon: IconButton(
+                                            icon: Icon(
+                                              controller.obscureText2.value
+                                                  ? Icons.visibility_off
+                                                  : Icons.visibility,
+                                            ),
+                                            onPressed: () => controller
+                                                .togglePasswordView2(),
+                                          ),
                                         ),
-                                      ),
-                                    ))),
+                                      ))),
                               const SizedBox(height: 25),
                               SizedBox(
                                   width: double.infinity,
@@ -295,7 +292,8 @@ class RegisterView extends GetView<RegisterController> {
                                         backgroundColor: Colors.transparent,
                                         shadowColor: Colors.transparent,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(15),
+                                          borderRadius:
+                                              BorderRadius.circular(15),
                                         ),
                                       ),
                                       child: const Text(
@@ -310,7 +308,8 @@ class RegisterView extends GetView<RegisterController> {
                                         controller.nohpController.text,
                                         controller.emailController.text,
                                         controller.passwordController.text,
-                                        controller.confirmPasswordController.text,
+                                        controller
+                                            .confirmPasswordController.text,
                                       ),
                                     ),
                                   )),
@@ -330,8 +329,8 @@ class RegisterView extends GetView<RegisterController> {
                                       'Masuk',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        color: Color(0xFF40C4FF),
-                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF0288D1),
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                     onPressed: () => Get.back(),

@@ -1,5 +1,4 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import '../../login/views/login_view.dart';
 import '/app/modules/reset_password/controllers/reset_password_controller.dart';
 import '/app/routes/app_pages.dart';
@@ -28,7 +27,7 @@ class ResetPasswordView extends GetView<ResetPasswordController> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    height: 350,
+                    height: 370,
                     padding: const EdgeInsets.only(top: 50),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -106,15 +105,8 @@ class ResetPasswordView extends GetView<ResetPasswordController> {
                             'Perbarui kata sandi Anda disini!',
                             style: TextStyle(
                               fontSize: 18,
-                              color: Color(0xFF0277BD),
                               fontWeight: FontWeight.bold,
-                              shadows: [
-                                Shadow(
-                                  offset: Offset(1.5, 1.5),
-                                  color: Colors.black12,
-                                  blurRadius: 3,
-                                ),
-                              ],
+                              color: Color(0xFF0288D1),
                             ),
                           ),
                         ),
@@ -205,8 +197,8 @@ class ResetPasswordView extends GetView<ResetPasswordController> {
                                 'Masuk',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Color(0xFF40C4FF),
-                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF0288D1),
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                               onPressed: () => Get.back(),

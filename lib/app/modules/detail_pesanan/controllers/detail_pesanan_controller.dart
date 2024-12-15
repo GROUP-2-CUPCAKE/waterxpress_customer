@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '/app/data/Produk.dart';
 import 'package:waterxpress_customer/app/routes/app_pages.dart';
@@ -8,11 +9,8 @@ class DetailPesananController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Observables for customer data
   var alamat = ''.obs;
   var ongkir = 0.obs;
-
-  // Observable list for productsH
   var produkList = <Produk>[].obs;
   RxList<Produk> selectedProducts = <Produk>[].obs;
   RxList<Produk> allProducts = <Produk>[].obs;
@@ -24,7 +22,7 @@ class DetailPesananController extends GetxController {
   var subtotalProduk = 0.obs;
   var total = 0.obs;
 
-  var isLoading = false.obs; // Indikator loading
+  var isLoading = false.obs;
   var selectedProduct = Rxn<Produk>();
 
   // Initialize data
@@ -36,249 +34,20 @@ class DetailPesananController extends GetxController {
     fetchAllProducts();
   }
 
-  // Fetch customer data based on the logged-in user's email
-  Future<void> fetchCustomerData() async {
-    try {
-      final email = _auth.currentUser?.email;
-      if (email == null) return;
-
-      final snapshot = await _firestore
-          .collection('customer')
-          .where('email', isEqualTo: email)
-          .get();
-
-      if (snapshot.docs.isNotEmpty) {
-        final data = snapshot.docs.first.data();
-
-        // Handle berbagai tipe data
-        alamat.value = data['alamat'] ?? '';
-
-        // Konversi ongkir ke int
-        ongkir.value = (data['ongkir'] ?? 0).toInt();
-
-        _updateTotal();
-      }
-    } catch (e) {
-      print('Error fetching customer data: $e');
-    }
+  // Tambahkan getter untuk validasi alamat
+  bool get isAlamatValid {
+    return alamat.value.isNotEmpty && alamat.value != 'Alamat belum diatur';
   }
 
-  void refreshUserLocation() async {
-    try {
-      // Ambil user saat ini
-      final user = FirebaseAuth.instance.currentUser;
-      
-      // Cek apakah user ada
-      if (user != null) {
-        // Ambil dokumen user
-        final snapshot = await FirebaseFirestore.instance
-            .collection('customer')
-            .doc(user.uid)
-            .get();
-        
-        // Update alamat jika dokumen ada
-        if (snapshot.exists) {
-          alamat.value = snapshot['alamat'] ?? '';
-          ongkir.value = (snapshot['ongkir'] as num?)?.toInt() ?? 0;
-        }
-      }
-    } catch (e) {
-      print('Gagal refresh alamat: $e');
-    }
-
-  }
-
-  // Fetch product data from the 'Produk' collection
-  Future<void> fetchProdukData() async {
-    try {
-      final snapshot = await _firestore.collection('Produk').get();
-      produkList.value = snapshot.docs
-          .map((doc) => Produk.fromJson(doc.data() as Map<String, dynamic>))
-          .toList();
-    } catch (e) {
-      print('Error fetching product data: $e');
-    }
-  }
-
-  // ---
-  List<Produk> getAvailableProducts() {
-    // Filter produk yang belum dipilih
-    return allProducts
-        .where((product) =>
-            product.id != selectedProduct.value?.id &&
-            !selectedProducts
-                .any((selectedProduct) => selectedProduct.id == product.id))
-        .toList();
-  }
-
-  Future<void> loadProductDetails(String productId) async {
-    try {
-      isLoading.value = true;
-
-      // Ambil data produk dari koleksi 'Produk' di Firestore
-      DocumentSnapshot productSnapshot =
-          await _firestore.collection('Produk').doc(productId).get();
-
-      if (productSnapshot.exists) {
-        // Parse data produk
-        Map<String, dynamic> data =
-            productSnapshot.data() as Map<String, dynamic>;
-        selectedProduct.value = Produk(
-          id: productId,
-          nama: data['nama'] ?? 'Produk Tidak Ditemukan',
-          harga: data['harga'] ?? 0,
-          stok: data['stok'] ?? 0,
-          images: data['images'] ?? 'https://via.placeholder.com/150',
-        );
-
-        // Tambahkan produk ke daftar produk
-        produkList.add(selectedProduct.value!);
-
-        // Inisialisasi kuantitas produk utama
-        productQuantities[productId] = 1;
-        _updateTotal();
-      } else {
-        Get.snackbar('Error', 'Produk tidak ditemukan di database.');
-      }
-    } catch (e) {
-      print('Error loading product details: $e');
-      Get.snackbar('Error', 'Gagal memuat data produk.');
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  // Metode untuk menambah kuantitas produk
-  void tambahKuantitas(Produk product) {
-    // Cek apakah produk adalah produk utama
-    bool isProdukUtama = selectedProduct.value?.id == product.id;
-
-    // Cek stok sebelum menambah kuantitas
-    int currentQuantity = productQuantities[product.id] ?? 0;
-    if (currentQuantity + 1 > product.stok) {
-      Get.snackbar('Stok Terbatas', 'Stok ${product.nama} tidak mencukupi');
-      return;
-    }
-
-    // Jika produk utama, naikkan kuantitas
-    if (isProdukUtama) {
-      productQuantities[product.id] = (productQuantities[product.id] ?? 0) + 1;
-      _updateTotal();
-      return;
-    }
-
-    // Tambahkan produk tambahan jika belum ada
-    if (!selectedProducts.any((p) => p.id == product.id)) {
-      selectedProducts.add(product);
-    }
-
-    // Update kuantitas produk tambahan
-    productQuantities[product.id] = (productQuantities[product.id] ?? 0) + 1;
-    _updateTotal();
-  }
-
-  void tambahProduk(Produk product) {
-    // Cek apakah produk adalah produk utama
-    bool isProdukUtama = selectedProduct.value?.id == product.id;
-
-    // Cek apakah produk sudah ada di selectedProducts
-    bool isProdukTambahan = selectedProducts.any((p) => p.id == product.id);
-
-    // Cek stok sebelum menambah
-    int currentQuantity = productQuantities[product.id] ?? 0;
-    if (currentQuantity + 1 > product.stok) {
-      Get.snackbar('Stok Terbatas', 'Stok ${product.nama} tidak mencukupi');
-      return;
-    }
-
-    if (isProdukUtama || isProdukTambahan) {
-      // Jika produk sudah ada, naikkan kuantitasnya
-      tambahKuantitas(product);
-    } else {
-      // Jika produk belum ada sama sekali, tambahkan ke selectedProducts
-      selectedProducts.add(product);
-      // Set default kuantitas
-      productQuantities[product.id] = 1;
-      _updateTotal();
-    }
-  }
-
-  // Metode untuk mengurangi kuantitas produk
-  void kurangiKuantitas(Produk product) {
-    // Cek apakah produk adalah produk utama
-    bool isProdukUtama = selectedProduct.value?.id == product.id;
-
-    if (productQuantities.containsKey(product.id)) {
-      if ((productQuantities[product.id] ?? 0) > 1) {
-        // Kurangi kuantitas
-        productQuantities[product.id] =
-            (productQuantities[product.id] ?? 0) - 1;
-      } else {
-        // Jika kuantitas 1, hapus produk
-        productQuantities.remove(product.id);
-
-        if (isProdukUtama) {
-          // Untuk produk utama, tidak bisa dihapus sepenuhnya
-          productQuantities[product.id] = 1;
-        } else {
-          // Untuk produk tambahan, hapus dari daftar
-          selectedProducts.removeWhere((p) => p.id == product.id);
-        }
-      }
-
-      _updateTotal();
-    }
-  }
-
-  // Metode untuk menghapus produk
-  void hapusProduk(Produk product) {
-    selectedProducts.removeWhere((p) => p.id == product.id);
-    productQuantities.remove(product.id);
-    _updateTotal();
-  }
-
-  // Fetch semua produk untuk bottom sheet
-  Future<void> fetchAllProducts() async {
-    try {
-      final snapshot = await _firestore.collection('Produk').get();
-      allProducts.value = snapshot.docs
-          .map((doc) => Produk.fromJson(doc.data() as Map<String, dynamic>))
-          .toList();
-    } catch (e) {
-      print('Error fetching all products: $e');
-    }
-  }
-
-  // Update total dengan perhitungan detail
-  void _updateTotal() {
-    // Hitung subtotal untuk semua produk (produk utama + produk tambahan)
-    double subtotalKeseluruhan = 0;
-
-    if (selectedProduct.value != null) {
-      // Gunakan kuantitas dari productQuantities jika ada, jika tidak gunakan 1
-      int kuantitasProdukUtama =
-          productQuantities[selectedProduct.value!.id] ?? 1;
-      subtotalKeseluruhan +=
-          selectedProduct.value!.harga * kuantitasProdukUtama;
-    }
-
-    // Tambahkan produk tambahan dengan kuantitasnya
-    selectedProducts.forEach((product) {
-      int quantity = productQuantities[product.id] ?? 1;
-      subtotalKeseluruhan += product.harga * quantity;
-    });
-
-    // Set subtotal produk
-    subtotalProduk.value = subtotalKeseluruhan.toInt();
-
-    int totalKeseluruhan = subtotalKeseluruhan.toInt() + ongkir.value;
-
-    // Update total
-    total.value = totalKeseluruhan;
-  }
-
-  // Save order to the 'Pesanan' collection in Firebase
+  // Ganti method buatPesanan() yang sudah ada dengan versi baru
   Future<void> buatPesanan() async {
+    // Periksa validitas alamat
+    if (!isAlamatValid) {
+      _showAlamatDialog();
+      return;
+    }
+
+    // Lanjutkan proses pembuatan pesanan yang sudah ada
     try {
       final user = _auth.currentUser;
       if (user == null) {
@@ -323,20 +92,378 @@ class DetailPesananController extends GetxController {
       // Simpan pesanan ke Firestore
       DocumentReference pesananRef =
           await _firestore.collection('Pesanan').add(orderData);
-
       await _kurangiStokProduk(semuaProduk);
-
-      print('Pesanan berhasil disimpan dengan ID: ${pesananRef.id}'); 
+      print('Pesanan berhasil disimpan dengan ID: ${pesananRef.id}');
       _resetPesanan();
-
-      Get.snackbar('Sukses', 'Pesanan berhasil dibuat');
+      Get.snackbar(
+        'Sukses',
+        'Pesanan berhasil dibuat',
+        duration: const Duration(seconds: 2),
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFF0288D1),
+      );
       Get.offNamed(Routes.HOME);
       // Reset data tambahan
       resetTambahItem();
     } catch (e) {
       print('Error saving order: $e');
-      Get.snackbar('Error', 'Gagal membuat pesanan: $e');
+      Get.snackbar(
+        'Error',
+        'Gagal membuat pesanan: $e',
+        duration: const Duration(seconds: 2),
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
+      );
     }
+  }
+
+  // status refresh
+  var isRefreshingLocation = false.obs;
+
+  void refreshUserLocation() async {
+    try {
+      isRefreshingLocation.value = true;
+
+      // Ambil user saat ini
+      final user = FirebaseAuth.instance.currentUser;
+
+      // Cek apakah user ada
+      if (user != null) {
+        final snapshot = await FirebaseFirestore.instance
+            .collection('customer')
+            .doc(user.uid)
+            .get();
+
+        // Update alamat jika dokumen ada
+        if (snapshot.exists) {
+          alamat.value = snapshot['alamat'] ?? '';
+          ongkir.value = (snapshot['ongkir'] as num?)?.toInt() ?? 0;
+        }
+      }
+    } catch (e) {
+      print('Gagal refresh alamat: $e');
+      Get.snackbar(
+        'Error',
+        'Gagal memperbarui alamat',
+        duration: const Duration(seconds: 2),
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
+      );
+    } finally {
+      isRefreshingLocation.value = false;
+    }
+  }
+
+  // Method untuk menampilkan dialog pesanan gagal
+  void _showPesananGagalDialog(String errorMessage) {
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        title: const Text(
+          'Gagal Membuat Pesanan',
+          style: TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          'Terjadi kesalahan: $errorMessage',
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Tutup'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Method untuk menampilkan dialog alamat belum diatur
+  void _showAlamatDialog() {
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        title: const Text(
+          'Alamat Belum Diatur',
+          style: TextStyle(
+            color: Color(0xFF0288D1),
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: const Text(
+          'Silakan mengatur alamat terlebih dahulu sebelum membuat pesanan.',
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              padding: EdgeInsets.zero,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+            ),
+            onPressed: () {
+              Get.back(); // Tutup dialog
+
+              // Navigasi ke halaman profil
+              Get.toNamed(Routes.PROFIL);
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF40C4FF), Color(0xFF0288D1)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(15),
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 12,
+              ),
+              child: const Text(
+                'Atur Alamat',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Ambil data pelanggan berdasarkan email pengguna yang login
+  Future<void> fetchCustomerData() async {
+    try {
+      final email = _auth.currentUser?.email;
+      if (email == null) return;
+
+      final snapshot = await _firestore
+          .collection('customer')
+          .where('email', isEqualTo: email)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        final data = snapshot.docs.first.data();
+        alamat.value = data['alamat'] ?? '';
+        ongkir.value = (data['ongkir'] ?? 0).toInt();
+
+        _updateTotal();
+      }
+    } catch (e) {
+      print('Error fetching customer data: $e');
+    }
+  }
+
+  // Ambil data produk dari koleksi 'Produk'
+  Future<void> fetchProdukData() async {
+    try {
+      final snapshot = await _firestore.collection('Produk').get();
+      produkList.value = snapshot.docs
+          .map((doc) => Produk.fromJson(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      print('Error fetching product data: $e');
+    }
+  }
+
+  List<Produk> getAvailableProducts() {
+    // Filter produk yang belum dipilih
+    return allProducts
+        .where((product) =>
+            product.id != selectedProduct.value?.id &&
+            !selectedProducts
+                .any((selectedProduct) => selectedProduct.id == product.id))
+        .toList();
+  }
+
+  Future<void> loadProductDetails(String productId) async {
+    try {
+      isLoading.value = true;
+
+      // Ambil data produk dari  Firestore
+      DocumentSnapshot productSnapshot =
+          await _firestore.collection('Produk').doc(productId).get();
+
+      if (productSnapshot.exists) {
+        Map<String, dynamic> data =
+            productSnapshot.data() as Map<String, dynamic>;
+        selectedProduct.value = Produk(
+          id: productId,
+          nama: data['nama'] ?? 'Produk Tidak Ditemukan',
+          harga: data['harga'] ?? 0,
+          stok: data['stok'] ?? 0,
+          images: data['images'] ?? 'https://via.placeholder.com/150',
+        );
+
+        // Tambahkan produk ke daftar produk
+        produkList.add(selectedProduct.value!);
+
+        // Inisialisasi kuantitas produk utama
+        productQuantities[productId] = 1;
+        _updateTotal();
+      } else {
+        Get.snackbar(
+          'Error',
+          'Produk tidak ditemukan di database.',
+          duration: const Duration(seconds: 2),
+          margin: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFFFF5252),
+        );
+      }
+    } catch (e) {
+      print('Error loading product details: $e');
+      Get.snackbar(
+        'Error',
+        'Gagal memuat data produk.',
+        duration: const Duration(seconds: 2),
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Metode untuk menambah kuantitas produk
+  void tambahKuantitas(Produk product) {
+    bool isProdukUtama = selectedProduct.value?.id == product.id;
+
+    // Cek stok sebelum menambah kuantitas
+    int currentQuantity = productQuantities[product.id] ?? 0;
+    if (currentQuantity + 1 > product.stok) {
+      Get.snackbar(
+        'Stok Terbatas',
+        'Stok ${product.nama} tidak mencukupi',
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
+        duration: const Duration(seconds: 2),
+        margin: const EdgeInsets.all(12),
+      );
+      return;
+    }
+
+    // naikkan kuantitas
+    if (isProdukUtama) {
+      productQuantities[product.id] = (productQuantities[product.id] ?? 0) + 1;
+      _updateTotal();
+      return;
+    }
+
+    // Tambahkan produk tambahan jika belum ada
+    if (!selectedProducts.any((p) => p.id == product.id)) {
+      selectedProducts.add(product);
+    }
+
+    // Update kuantitas produk tambahan
+    productQuantities[product.id] = (productQuantities[product.id] ?? 0) + 1;
+    _updateTotal();
+  }
+
+  // tambah produk
+  void tambahProduk(Produk product) {
+    bool isProdukUtama = selectedProduct.value?.id == product.id;
+    bool isProdukTambahan = selectedProducts.any((p) => p.id == product.id);
+    int currentQuantity = productQuantities[product.id] ?? 0;
+    if (currentQuantity + 1 > product.stok) {
+      Get.snackbar(
+        'Stok Terbatas',
+        'Stok ${product.nama} tidak mencukupi',
+        duration: const Duration(seconds: 2),
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
+      );
+      return;
+    }
+
+    if (isProdukUtama || isProdukTambahan) {
+      tambahKuantitas(product);
+    } else {
+      selectedProducts.add(product);
+      productQuantities[product.id] = 1;
+      _updateTotal();
+    }
+  }
+
+  // kurang kuantitas
+  void kurangiKuantitas(Produk product) {
+    bool isProdukUtama = selectedProduct.value?.id == product.id;
+    if (productQuantities.containsKey(product.id)) {
+      if ((productQuantities[product.id] ?? 0) > 1) {
+        productQuantities[product.id] =
+            (productQuantities[product.id] ?? 0) - 1;
+      } else {
+        productQuantities.remove(product.id);
+        if (isProdukUtama) {
+          productQuantities[product.id] = 1;
+        } else {
+          selectedProducts.removeWhere((p) => p.id == product.id);
+        }
+      }
+
+      _updateTotal();
+    }
+  }
+
+  // Metode untuk menghapus produk
+  void hapusProduk(Produk product) {
+    selectedProducts.removeWhere((p) => p.id == product.id);
+    productQuantities.remove(product.id);
+    _updateTotal();
+  }
+
+  // Fetch semua produk untuk bottom sheet
+  Future<void> fetchAllProducts() async {
+    try {
+      final snapshot = await _firestore.collection('Produk').get();
+      allProducts.value = snapshot.docs
+          .map((doc) => Produk.fromJson(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      print('Error fetching all products: $e');
+    }
+  }
+
+  // Update total
+  void _updateTotal() {
+    double subtotalKeseluruhan = 0;
+    if (selectedProduct.value != null) {
+      int kuantitasProdukUtama =
+          productQuantities[selectedProduct.value!.id] ?? 1;
+      subtotalKeseluruhan +=
+          selectedProduct.value!.harga * kuantitasProdukUtama;
+    }
+
+    // Tambahkan produk tambahan dengan kuantitasnya
+    selectedProducts.forEach((product) {
+      int quantity = productQuantities[product.id] ?? 1;
+      subtotalKeseluruhan += product.harga * quantity;
+    });
+    subtotalProduk.value = subtotalKeseluruhan.toInt();
+    int totalKeseluruhan = subtotalKeseluruhan.toInt() + ongkir.value;
+    total.value = totalKeseluruhan;
   }
 
   // Metode untuk mengurangi stok produk setelah pesanan
@@ -347,9 +474,7 @@ class DetailPesananController extends GetxController {
       if (item['id'] != null) {
         DocumentReference produkRef =
             _firestore.collection('Produk').doc(item['id']);
-
         int kuantitas = item['kuantitas'] ?? 1;
-
         batch.update(produkRef, {'stok': FieldValue.increment(-kuantitas)});
       }
     }
@@ -393,9 +518,7 @@ class DetailPesananController extends GetxController {
       // Cek status pesanan sebelum membatalkan
       DocumentSnapshot pesananDoc =
           await _firestore.collection('Pesanan').doc(pesananId).get();
-
       String status = pesananDoc.get('status') ?? '';
-
       if (status == 'Diproses') {
         await _firestore.collection('Pesanan').doc(pesananId).update({
           'status': 'Dibatalkan',
@@ -407,12 +530,26 @@ class DetailPesananController extends GetxController {
 
         return true;
       } else {
-        Get.snackbar('Gagal', 'Pesanan tidak dapat dibatalkan');
+        Get.snackbar(
+          'Gagal',
+          'Pesanan tidak dapat dibatalkan',
+          duration: const Duration(seconds: 2),
+          margin: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFFFF5252),
+        );
         return false;
       }
     } catch (e) {
       print('Error membatalkan pesanan: $e');
-      Get.snackbar('Error', 'Gagal membatalkan pesanan');
+      Get.snackbar(
+        'Error',
+        'Gagal membatalkan pesanan',
+        duration: const Duration(seconds: 2),
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
+      );
       return false;
     }
   }
@@ -426,9 +563,7 @@ class DetailPesananController extends GetxController {
       if (item['id'] != null) {
         DocumentReference produkRef =
             _firestore.collection('Produk').doc(item['id']);
-
         int kuantitas = item['kuantitas'] ?? 1;
-
         batch.update(produkRef, {'stok': FieldValue.increment(kuantitas)});
       }
     }
@@ -443,8 +578,14 @@ class DetailPesananController extends GetxController {
       int kuantitasProdukUtama =
           productQuantities[selectedProduct.value!.id] ?? 1;
       if (selectedProduct.value!.stok < kuantitasProdukUtama) {
-        Get.snackbar('Stok Habis',
-            'Stok ${selectedProduct.value!.nama} tidak mencukupi. Tersedia: ${selectedProduct.value!.stok}');
+        Get.snackbar(
+          'Stok Habis',
+          'Stok ${selectedProduct.value!.nama} tidak mencukupi. Tersedia: ${selectedProduct.value!.stok}',
+          duration: const Duration(seconds: 2),
+          margin: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFFFF5252),
+        );
         return false;
       }
     }
@@ -453,12 +594,17 @@ class DetailPesananController extends GetxController {
     for (var product in selectedProducts) {
       int kuantitas = productQuantities[product.id] ?? 1;
       if (product.stok < kuantitas) {
-        Get.snackbar('Stok Terbatas',
-            'Stok ${product.nama} tidak mencukupi. Tersedia: ${product.stok}');
+        Get.snackbar(
+          'Stok Terbatas',
+          'Stok ${product.nama} tidak mencukupi. Tersedia: ${product.stok}',
+          duration: const Duration(seconds: 2),
+          margin: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFFFF5252),
+        );
         return false;
       }
     }
-
     return true;
   }
 
@@ -475,10 +621,9 @@ class DetailPesananController extends GetxController {
     _updateTotal();
   }
 
-// Override method dispose untuk membersihkan data
+  // Reset semua data tambahan saat controller ditutup
   @override
   void onClose() {
-    // Reset semua data tambahan saat controller ditutup
     resetTambahItem();
     super.onClose();
   }

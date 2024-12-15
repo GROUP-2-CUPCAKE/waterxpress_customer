@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import '/app/routes/app_pages.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -29,9 +28,9 @@ class LoginController extends GetxController {
       Get.snackbar(
         'Error',
         'Email tidak boleh kosong.',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
         margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
       );
       return;
     }
@@ -40,9 +39,9 @@ class LoginController extends GetxController {
       Get.snackbar(
         'Error',
         'Password tidak boleh kosong.',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
         margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
       );
       return;
     }
@@ -55,20 +54,21 @@ class LoginController extends GetxController {
       // Check if email is verified
       if (userCredential.user!.emailVerified) {
         Get.snackbar(
-          'Success',
-          'Anda berhasil masuk',
-          snackPosition: SnackPosition.BOTTOM,
+          'Sukses',
+          'Kamu sudah berhasil masuk',
           duration: const Duration(seconds: 2),
           margin: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFF0288D1),
         );
         Get.offAllNamed(Routes.HOME);
       } else {
         Get.snackbar(
           'Error',
-          'Silahkan verifikasi email Anda!',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 2),
+          'Silahkan verifikasi email terlebih dahulu!',
           margin: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFFFF5252),
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -77,33 +77,34 @@ class LoginController extends GetxController {
         Get.snackbar(
           'Error',
           'Email tidak ditemukan di Firebase',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 2),
           margin: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFFFF5252),
         );
       } else if (e.code == 'wrong-password') {
         Get.snackbar(
           'Error',
           'Kata sandi salah. Silahkan coba lagi!',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 2),
           margin: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFFFF5252),
         );
       } else if (e.code == 'too-many-requests') {
         Get.snackbar(
           'Error',
           'Terlalu banyak permintaan. Coba lagi nanti!',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 2),
           margin: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFFFF5252),
         );
       } else {
         Get.snackbar(
           'Error',
           'Periksa email dan kata sandi. Silakan coba lagi!',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 2),
+          duration: const Duration(seconds: 3),
           margin: const EdgeInsets.all(12),
+          backgroundColor: Colors.white,
+          colorText: const Color(0xFFFF5252),
         );
       }
       log("FirebaseAuthException: ${e.code}");

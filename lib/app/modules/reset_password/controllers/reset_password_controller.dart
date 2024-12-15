@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import '/app/routes/app_pages.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 class ResetPasswordController extends GetxController {
@@ -11,20 +11,22 @@ class ResetPasswordController extends GetxController {
     if (email != "" && GetUtils.isEmail(email)) {
       await auth.sendPasswordResetEmail(email: email);
       Get.snackbar(
-        'Success',
-        'Silahkan cek email Anda untuk membuat kata sandi baru!',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 4),
-        margin: EdgeInsets.all(12),
+        'Sukses',
+        'Silahkan cek emailmu untuk membuat kata sandi baru!',
+        duration: const Duration(seconds: 4),
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFF0288D1),
       );
       Get.offAllNamed(Routes.LOGIN);
     } else {
       Get.snackbar(
         'Error',
         'Harap masukkan email yang valid!',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: Duration(seconds: 2),
-        margin: EdgeInsets.all(12),
+        duration: const Duration(seconds: 2),
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.white,
+        colorText: const Color(0xFFFF5252),
       );
     }
   }
