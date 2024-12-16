@@ -515,8 +515,10 @@ class ProfilView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            Wrap(
+              spacing: 10, // Jarak horizontal antar tombol
+              runSpacing: 10, // Jarak vertikal antar baris tombol
+              alignment: WrapAlignment.center,
               children: [
                 // Tombol Lokasi Saat Ini
                 ElevatedButton(

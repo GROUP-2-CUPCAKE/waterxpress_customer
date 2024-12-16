@@ -53,34 +53,3 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// class MyApp extends StatelessWidget {
-  // final authC = Get.put(LoginController(), permanent: true);
-  // @override
-  // Widget build(BuildContext context) {
-    // return ScreenUtilInit(
-      // designSize: const Size(375, 690),
-      // minTextAdapt: true,
-      // splitScreenMode: true,
-      // builder: (context, child) {
-        // return StreamBuilder<User?>(
-          // stream: authC.streamAuthStatus,
-          // builder: (context, snapshot) {
-            // if (snapshot.connectionState == ConnectionState.active) {
-              // print(snapshot);
-              // return GetMaterialApp(
-                // debugShowCheckedModeBanner: false,
-                // title: "APK WaterXpress",
-                // initialRoute: AppPages.INITIAL,
-                // getPages: AppPages.routes,
-                // theme: ThemeData(
-                  // primarySwatch: Colors.indigo,
-                // ),
-              // );
-            // }
-            // return LoadingView();
-          // },
-        // );
-      // },
-    // );
-  // }
-// }
