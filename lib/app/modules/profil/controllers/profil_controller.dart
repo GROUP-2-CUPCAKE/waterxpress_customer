@@ -116,25 +116,46 @@ class ProfilController extends GetxController {
           .get();
 
       if (snapshot.exists) {
-        nama.value = snapshot['username']?.toString() ?? '';
-        nohp.value = snapshot['nohp']?.toString() ?? '';
-        alamat.value = snapshot['alamat']?.toString() ?? '';
+        nama.value = (snapshot.data() as Map<String, dynamic>?)?['username']
+                ?.toString() ??
+            'Pengguna Baru';
+        nohp.value =
+            (snapshot.data() as Map<String, dynamic>?)?['nohp']?.toString() ??
+                '';
 
-        ongkir.value = _safeParseDouble(snapshot['ongkir']) ?? 0.0;
-        profileImageUrl.value = snapshot['profileImageUrl']?.toString() ?? '';
+        // Periksa keberadaan field sebelum mengaksesnya
+        var data = snapshot.data() as Map<String, dynamic>?;
+
+        alamat.value = data?['alamat']?.toString() ?? '';
+        ongkir.value = _safeParseDouble(data?['ongkir']) ?? 0.0;
+        profileImageUrl.value = data?['profileImageUrl']?.toString() ?? '';
 
         // Hitung ulang jarak jika alamat tersedia
         if (alamat.value.isNotEmpty) {
           await updateCoordinatesFromAddress();
         }
+      } else {
+        // Jika dokumen tidak ditemukan, inisialisasi dengan data default
+        nama.value = 'Pengguna Baru';
+        alamat.value = '';
+        ongkir.value = 0.0;
+        profileImageUrl.value = '';
       }
     } catch (e) {
+      print('Error memuat profil: $e');
+
+      // Berikan nilai default
+      nama.value = 'Pengguna Baru';
+      alamat.value = '';
+      ongkir.value = 0.0;
+      profileImageUrl.value = '';
+
       Get.snackbar(
-        'Error',
-        'Gagal memuat profil: $e',
+        'Informasi',
+        'Silakan lengkapi profil Anda',
         margin: const EdgeInsets.all(12),
         backgroundColor: Colors.white,
-        colorText: const Color(0xFFFF5252),
+        colorText: const Color(0xFF0288D1),
       );
     } finally {
       isLoading.value = false;

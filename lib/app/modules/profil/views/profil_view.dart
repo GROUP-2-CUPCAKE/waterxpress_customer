@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import '../controllers/profil_controller.dart';
 
@@ -488,17 +489,17 @@ class ProfilView extends StatelessWidget {
       builder: (context) => Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 14,
-          right: 14,
-          top: 16,
+          left: 14.w,
+          right: 14.w,
+          top: 16.h,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              width: 50,
-              height: 5,
+              width: 50.w,
+              height: 5.h,
               decoration: BoxDecoration(
                 color: Colors.grey[400],
                 borderRadius: BorderRadius.circular(10),
