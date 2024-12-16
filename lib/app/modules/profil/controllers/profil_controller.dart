@@ -210,10 +210,10 @@ class ProfilController extends GetxController {
   }
 
   double _calculateShippingCost(double distance) {
-    if (distance <= 1) return 0;
-    if (distance <= 2) return 1000;
-    if (distance <= 3) return 2000;
-    return ((distance - 3).ceil() * 1000) + 2000;
+    if (distance <= 1) return 1000;
+    if (distance <= 2) return 2000;
+    if (distance <= 3) return 3000;
+    return ((distance - 3).ceil() * 1000) + 3000;
   }
 
   //pilih lokasi saat ini
