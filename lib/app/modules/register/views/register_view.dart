@@ -233,8 +233,8 @@ class RegisterView extends GetView<RegisterController> {
                                   child: Obx(() => TextFormField(
                                         controller: controller
                                             .confirmPasswordController,
-                                        obscureText:
-                                            controller.obscureText.value,
+                                        obscureText: controller 
+                                            .obscureText2.value,
                                         decoration: InputDecoration(
                                           hintText: "Confirm Password",
                                           hintStyle: const TextStyle(
