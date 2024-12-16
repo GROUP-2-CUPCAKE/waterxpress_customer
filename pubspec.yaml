@@ -28,10 +28,17 @@ dependencies:
   intl: ^0.20.1
   image_picker: ^1.1.2
   firebase_storage: ^12.3.7
+  flutter_launcher_icons: ^0.14.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logo.jpeg"
+  min_sdk_android: 21
 
   flutter_lints: ^4.0.0
 
