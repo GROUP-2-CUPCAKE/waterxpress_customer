@@ -1,4 +1,4 @@
-# WaterXpress 💧
+# WaterXpress 💧 (Customer Side)
 
 <p align="center"> <img src="assets/images/logo.jpeg" width="250"> </p>
 
@@ -29,7 +29,7 @@ WaterXpress adalah aplikasi yang dirancang untuk mempermudah pelanggan memesan a
 
 ```bash
 # Clone repositori
-git clone https://github.com/username/waterxpress.git
+git clone https://github.com/GROUP-2-CUPCAKE/waterxpress_customer.git
 
 # Masuk direktori proyek
 cd waterxpress
