@@ -134,7 +134,7 @@ class RincianPesananView extends StatelessWidget {
             SizedBox(width: 4),
             Expanded(
               child: Text(
-                'Biaya pengiriman Rp1000 setelah 1 km, berlaku kelipatan',
+                'Biaya pengiriman Rp1000/km, berlaku kelipatan',
                 style: TextStyle(color: Colors.grey, fontSize: 10),
               ),
             ),
